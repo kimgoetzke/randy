@@ -81,10 +81,10 @@ public sealed partial class MainForm : Form
             return;
 
         // Calculate new window size
-        var newX = rect.Left + 20;
-        var newY = rect.Top + 20;
-        var newWidth = rect.Right - rect.Left - 40;
-        var newHeight = rect.Bottom - rect.Top - 40;
+        var newX = rect.Left + 30;
+        var newY = rect.Top + 30;
+        var newWidth = rect.Right - rect.Left - 60;
+        var newHeight = rect.Bottom - rect.Top - 60;
 
         // Set the new window placement
         var wp = new WindowPlacement
