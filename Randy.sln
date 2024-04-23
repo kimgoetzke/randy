@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RandyResize", "RandyResize\RandyResize.csproj", "{876EB435-2C27-4092-9FB6-86651499C7C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Randy", "Randy\Randy.csproj", "{876EB435-2C27-4092-9FB6-86651499C7C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

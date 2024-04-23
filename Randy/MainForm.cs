@@ -26,21 +26,21 @@ public sealed partial class MainForm : Form
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy,
         uint uFlags);
-    
+
     [DllImport("user32.dll")]
     private static extern bool SetWindowPlacement(IntPtr hWnd, ref WindowPlacement lpwndpl);
 
-    
+
     [DllImport("user32.dll")]
     private static extern IntPtr SendMessage(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
 
-    private const int WindowsKeyModifier = 0x0008; 
+    private const int WindowsKeyModifier = 0x0008;
     private const int WmHotkey = 0x0312; // Windows message for hotkey
     private const int HotkeyId = 1; // ID for the hotkey
     private const int SwMaximize = 3;
     private const uint WmPaint = 0x000F;
     private const int SwShowNormal = 1;
-    private Rectangle? previousSize = null;
+    private Rectangle? _previousSize;
 
     public MainForm()
     {
@@ -52,7 +52,7 @@ public sealed partial class MainForm : Form
         components = new System.ComponentModel.Container();
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(300, 150);
-        FormBorderStyle = FormBorderStyle.FixedSingle; 
+        FormBorderStyle = FormBorderStyle.FixedSingle;
         var label = new Label
         {
             Text = "Ready for action!",
@@ -68,25 +68,24 @@ public sealed partial class MainForm : Form
     protected override void WndProc(ref Message m)
     {
         base.WndProc(ref m);
-        
-        if (m.Msg != WmHotkey || m.WParam.ToInt32() != HotkeyId) 
+
+        if (m.Msg != WmHotkey || m.WParam.ToInt32() != HotkeyId)
             return;
-        
+
         var hWnd = GetForegroundWindow();
 
         // Maximize the window
         ShowWindow(hWnd, SwMaximize);
 
-        if (!GetWindowRect(hWnd, out var rect)) 
+        if (!GetWindowRect(hWnd, out var rect))
             return;
-        
+
         // Calculate new window size
         var newX = rect.Left + 20;
         var newY = rect.Top + 20;
         var newWidth = rect.Right - rect.Left - 40;
         var newHeight = rect.Bottom - rect.Top - 40;
 
-        
         // Set the new window placement
         var wp = new WindowPlacement
         {
@@ -99,7 +98,7 @@ public sealed partial class MainForm : Form
         };
 
         SetWindowPlacement(hWnd, ref wp);
-        
+
         // Force a repaint of the window
         SendMessage(hWnd, WmPaint, IntPtr.Zero, IntPtr.Zero);
     }
@@ -115,7 +114,7 @@ public sealed partial class MainForm : Form
         // Console.Out.WriteLine("Unregistering hotkey");
         UnregisterHotKey(Handle, HotkeyId);
     }
-    
+
     private struct Rect(int left, int top, int right, int bottom)
     {
         public readonly int Left = left;
@@ -123,7 +122,7 @@ public sealed partial class MainForm : Form
         public readonly int Right = right;
         public readonly int Bottom = bottom;
     }
-    
+
     [SuppressMessage("ReSharper", "NotAccessedField.Local")]
     private struct WindowPlacement(
         int length,
