@@ -1,4 +1,4 @@
-﻿namespace RandyResize;
+﻿namespace Randy;
 
 sealed partial class MainForm
 {

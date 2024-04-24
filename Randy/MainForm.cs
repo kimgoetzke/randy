@@ -1,10 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-
-namespace RandyResize;
-
-using System;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
+using Microsoft.Extensions.Logging;
+using Timer = System.Windows.Forms.Timer;
+
+namespace Randy;
 
 public sealed partial class MainForm : Form
 {
@@ -24,13 +22,8 @@ public sealed partial class MainForm : Form
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
     [DllImport("user32.dll")]
-    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy,
-        uint uFlags);
-
-    [DllImport("user32.dll")]
     private static extern bool SetWindowPlacement(IntPtr hWnd, ref WindowPlacement lpwndpl);
-
-
+    
     [DllImport("user32.dll")]
     private static extern IntPtr SendMessage(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
 
@@ -41,28 +34,55 @@ public sealed partial class MainForm : Form
     private const uint WmPaint = 0x000F;
     private const int SwShowNormal = 1;
     private Rectangle? _previousSize;
+    private NotifyIcon _trayIcon;
+    private readonly Timer _timer = new();
+    private readonly ILogger<MainForm> _logger;
 
-    public MainForm()
+    public MainForm(ILogger<MainForm> logger)
     {
         InitializeComponent();
+        _logger = logger;
+        
+        // Events
         Load += MainForm_Load;
         FormClosing += MainForm_FormClosing;
-        Text = "Resize Randy";
+        Minimise(1000);
+        
+        // Initialize NotifyIcon
+        _trayIcon = new NotifyIcon
+        {
+            Icon = SystemIcons.Application,
+            Visible = true
+        };
+
+        // Create a context menu for tray icon
+        var cm = new ContextMenuStrip();
+        cm.Items.Add("Open", null, Open);
+        cm.Items.Add("Minimise", null, Minimise);
+        cm.Items.Add("Exit", null, Exit);
+        _trayIcon.ContextMenuStrip = cm;
+
+        // Create form
+        CreateDefaultForm();
+    }
+
+    private void CreateDefaultForm()
+    {
+        ShowInTaskbar = false;
+        Text = "Randy";
         BackColor = ColorTranslator.FromHtml("#3B4252");
         components = new System.ComponentModel.Container();
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(300, 150);
+        ClientSize = new Size(300, 90);
         FormBorderStyle = FormBorderStyle.FixedSingle;
-        var label = new Label
-        {
-            Text = "Ready for action!",
-            Font = new Font(Font.FontFamily, 20, FontStyle.Bold),
-            AutoSize = false,
-            Dock = DockStyle.Fill,
-            TextAlign = ContentAlignment.MiddleCenter,
-            ForeColor = ColorTranslator.FromHtml("#5E81AC")
-        };
-        Controls.Add(label);
+        Notifier.SetMessage(this, "Ready for action!");
+    }
+
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        var workingArea = Screen.GetWorkingArea(this);
+        Location = new Point(workingArea.Right - Size.Width - 20, workingArea.Bottom - Size.Height - 40);
     }
 
     protected override void WndProc(ref Message m)
@@ -73,13 +93,19 @@ public sealed partial class MainForm : Form
             return;
 
         var hWnd = GetForegroundWindow();
-
-        // Maximize the window
-        ShowWindow(hWnd, SwMaximize);
+        ShowWindow(hWnd, SwMaximize); // Maximize the window
 
         if (!GetWindowRect(hWnd, out var rect))
+        {
+            _logger.LogWarning("Failed to get window rect");
             return;
-
+        }
+        
+        ResetTimerIfEnabled();
+        WindowState = FormWindowState.Normal;
+        Notifier.SetMessage(this, "Maximise!");
+        Minimise(700);
+        
         // Calculate new window size
         var newX = rect.Left + 30;
         var newY = rect.Top + 30;
@@ -98,45 +124,55 @@ public sealed partial class MainForm : Form
         };
 
         SetWindowPlacement(hWnd, ref wp);
-
-        // Force a repaint of the window
-        SendMessage(hWnd, WmPaint, IntPtr.Zero, IntPtr.Zero);
+        SendMessage(hWnd, WmPaint, IntPtr.Zero, IntPtr.Zero); // Force a repaint of the window
+    }
+    
+    private void Minimise(int interval)
+    {
+        _timer.Interval = interval;
+        _timer.Tick += Minimise;
+        _timer.Start();
+        _logger.LogInformation("Starting timer");
     }
 
     private void MainForm_Load(object? sender, EventArgs e)
     {
-        // Console.Out.WriteLine("Registering hotkey");
+        _logger.LogInformation("Registering hotkey and start timer");
         RegisterHotKey(Handle, HotkeyId, WindowsKeyModifier, (uint)Keys.Oem5); // Win + Backslash
     }
 
     private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
     {
-        // Console.Out.WriteLine("Unregistering hotkey");
+        _logger.LogInformation("Unregistering hotkey");
         UnregisterHotKey(Handle, HotkeyId);
     }
 
-    private struct Rect(int left, int top, int right, int bottom)
+    #region Tray icon context menu actions
+    private void Open(object? sender, EventArgs e)
     {
-        public readonly int Left = left;
-        public readonly int Top = top;
-        public readonly int Right = right;
-        public readonly int Bottom = bottom;
+        WindowState = FormWindowState.Normal;
+        Activate();
+    }
+    
+    private void Minimise(object? sender, EventArgs e)
+    {
+        ResetTimerIfEnabled();
+        _logger.LogInformation("Minimising window");
+        WindowState = FormWindowState.Minimized;
     }
 
-    [SuppressMessage("ReSharper", "NotAccessedField.Local")]
-    private struct WindowPlacement(
-        int length,
-        int flags,
-        int showCmd,
-        Point ptMinPosition,
-        Point ptMaxPosition,
-        Rectangle rcNormalPosition)
+    private void ResetTimerIfEnabled()
     {
-        public int Length = length;
-        public int Flags = flags;
-        public int ShowCmd = showCmd;
-        public Point PtMinPosition = ptMinPosition;
-        public Point PtMaxPosition = ptMaxPosition;
-        public Rectangle RcNormalPosition = rcNormalPosition;
+        if (!_timer.Enabled) 
+            return;
+        
+        _logger.LogInformation("Stopping timer");
+        _timer.Stop();
+        _timer.Tick -= Minimise;
+        _timer.Dispose();
     }
+
+    private void Exit(object? sender, EventArgs e) => Close();
+    
+    #endregion
 }
