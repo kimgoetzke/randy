@@ -33,8 +33,10 @@ public sealed partial class MainForm : Form
     private const int SwMaximize = 3;
     private const uint WmPaint = 0x000F;
     private const int SwShowNormal = 1;
-    private Rectangle? _previousSize;
-    private NotifyIcon _trayIcon;
+    private const FormBorderStyle DefaultFormStyle = FormBorderStyle.FixedDialog;
+    private const string IconFile = "../../../assets/randy.ico";
+    // private Rectangle? _previousSize;
+    private readonly NotifyIcon _trayIcon;
     private readonly Timer _timer = new();
     private readonly ILogger<MainForm> _logger;
 
@@ -51,7 +53,7 @@ public sealed partial class MainForm : Form
         // Initialize NotifyIcon
         _trayIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = new Icon(IconFile),
             Visible = true
         };
 
@@ -68,7 +70,8 @@ public sealed partial class MainForm : Form
 
     private void CreateDefaultForm()
     {
-        ShowInTaskbar = false;
+        ShowInTaskbar = true;
+        Icon = new Icon(IconFile);
         Text = "Randy";
         BackColor = ColorTranslator.FromHtml("#3B4252");
         components = new System.ComponentModel.Container();
