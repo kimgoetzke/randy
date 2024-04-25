@@ -46,26 +46,38 @@ public sealed partial class MainForm : Form
         _logger = logger;
         
         // Events
-        Load += MainForm_Load;
-        FormClosing += MainForm_FormClosing;
+        Load += RegisterHotKey;
+        FormClosing += UnregisterHotKey;
+        Resize += MinimiseOnResize;
         Minimise(1000);
         
-        // Initialize NotifyIcon
+        // Initialize tray icon
         _trayIcon = new NotifyIcon
         {
             Icon = new Icon(IconFile),
             Visible = true
         };
-
-        // Create a context menu for tray icon
-        var cm = new ContextMenuStrip();
-        cm.Items.Add("Open", null, Open);
-        cm.Items.Add("Minimise", null, Minimise);
-        cm.Items.Add("Exit", null, Exit);
-        _trayIcon.ContextMenuStrip = cm;
+        _trayIcon.MouseDoubleClick += Open;
+        UpdateTrayContextMenu();
 
         // Create form
         CreateDefaultForm();
+    }
+
+    private void UpdateTrayContextMenu()
+    {
+        _trayIcon.ContextMenuStrip?.Dispose();
+        var cm = new ContextMenuStrip();
+        if (WindowState == FormWindowState.Minimized)
+        {
+            cm.Items.Add("Open", null, Open);
+        }
+        else
+        {
+            cm.Items.Add("Minimise", null, Minimise);
+        }
+        cm.Items.Add("Exit", null, Exit);
+        _trayIcon.ContextMenuStrip = cm;
     }
 
     private void CreateDefaultForm()
@@ -76,16 +88,18 @@ public sealed partial class MainForm : Form
         BackColor = ColorTranslator.FromHtml("#3B4252");
         components = new System.ComponentModel.Container();
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(300, 90);
-        FormBorderStyle = FormBorderStyle.FixedSingle;
-        Notifier.SetMessage(this, "Ready for action!");
+        ClientSize = new Size(500, 200);
+        FormBorderStyle = DefaultFormStyle;
+        MaximizeBox = false;
+        Notifier.SetMessage(this, "Randy is ready for action!");
     }
 
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
         var workingArea = Screen.GetWorkingArea(this);
-        Location = new Point(workingArea.Right - Size.Width - 20, workingArea.Bottom - Size.Height - 40);
+        var centerPoint = new Point(workingArea.Width / 2, workingArea.Height / 2);
+        Location = new Point(centerPoint.X - Size.Width / 2, centerPoint.Y - Size.Height / 2);
     }
 
     protected override void WndProc(ref Message m)
@@ -104,11 +118,6 @@ public sealed partial class MainForm : Form
             return;
         }
         
-        ResetTimerIfEnabled();
-        WindowState = FormWindowState.Normal;
-        Notifier.SetMessage(this, "Maximise!");
-        Minimise(700);
-        
         // Calculate new window size
         var newX = rect.Left + 30;
         var newY = rect.Top + 30;
@@ -126,8 +135,17 @@ public sealed partial class MainForm : Form
             RcNormalPosition = new Rectangle(newX, newY, newX + newWidth, newY + newHeight)
         };
 
+        _logger.LogInformation("Updating window placement");
         SetWindowPlacement(hWnd, ref wp);
         SendMessage(hWnd, WmPaint, IntPtr.Zero, IntPtr.Zero); // Force a repaint of the window
+    }
+    
+    private void MinimiseOnResize(object? sender, EventArgs e)
+    {
+        if (WindowState == FormWindowState.Minimized)
+        {
+            Minimise(null, EventArgs.Empty);
+        }
     }
     
     private void Minimise(int interval)
@@ -138,13 +156,13 @@ public sealed partial class MainForm : Form
         _logger.LogInformation("Starting timer");
     }
 
-    private void MainForm_Load(object? sender, EventArgs e)
+    private void RegisterHotKey(object? sender, EventArgs e)
     {
         _logger.LogInformation("Registering hotkey and start timer");
         RegisterHotKey(Handle, HotkeyId, WindowsKeyModifier, (uint)Keys.Oem5); // Win + Backslash
     }
 
-    private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
+    private void UnregisterHotKey(object? sender, FormClosingEventArgs e)
     {
         _logger.LogInformation("Unregistering hotkey");
         UnregisterHotKey(Handle, HotkeyId);
@@ -153,15 +171,21 @@ public sealed partial class MainForm : Form
     #region Tray icon context menu actions
     private void Open(object? sender, EventArgs e)
     {
+        ShowInTaskbar = true;
         WindowState = FormWindowState.Normal;
+        FormBorderStyle = DefaultFormStyle;
         Activate();
+        UpdateTrayContextMenu();
     }
     
     private void Minimise(object? sender, EventArgs e)
     {
-        ResetTimerIfEnabled();
         _logger.LogInformation("Minimising window");
+        ResetTimerIfEnabled();
         WindowState = FormWindowState.Minimized;
+        FormBorderStyle = FormBorderStyle.None;
+        ShowInTaskbar = false;
+        UpdateTrayContextMenu();
     }
 
     private void ResetTimerIfEnabled()
