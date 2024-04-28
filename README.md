@@ -1,5 +1,5 @@
 ﻿<p align="center">
-  <img src="./assets/randy_logo.png" alt="Randy"/>
+  <img src="./assets/randy_logo.png" width="200" height="200" alt="Randy"/>
 </p>
 
 # Randy
