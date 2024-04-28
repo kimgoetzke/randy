@@ -12,8 +12,8 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
     private const string AppName = "Randy";
 
     private readonly Color _nordDark0 = ColorTranslator.FromHtml("#2e3440");
-    private readonly Color _nordDark3 = ColorTranslator.FromHtml("#4c566a"); 
-    private readonly Color _nordDark9 = ColorTranslator.FromHtml("#6d7a96"); 
+    private readonly Color _nordDark3 = ColorTranslator.FromHtml("#4c566a");
+    private readonly Color _nordDark9 = ColorTranslator.FromHtml("#6d7a96");
     private readonly Color _nordBright4 = ColorTranslator.FromHtml("#d8dee9");
     private readonly Color _nordBright5 = ColorTranslator.FromHtml("#e5e9f0");
     private readonly Color _nordBrightX = ColorTranslator.FromHtml("#909aaf");
@@ -102,7 +102,7 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
 
     private PanelWithBorder KeyPanel(string text)
     {
-        var label = new Label 
+        var label = new Label
         {
             Text = text,
             AutoSize = true,
@@ -123,45 +123,53 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
     }
 
 
-    private static bool IsAutoStartEnabled()
+    private bool IsAutoStartEnabled()
     {
         using var key = Registry.CurrentUser.OpenSubKey(AutoStartRegistryKey);
 
         if (key == null)
+        {
+            logger.LogWarning("Could not open registry key: {Key}", AutoStartRegistryKey);
             return false;
+        }
 
         var value = (string?)key.GetValue(AppName);
 
         if (string.IsNullOrEmpty(value))
+        {
+            logger.LogInformation("Autostart is not enabled");
             return false;
+        }
 
+        logger.LogInformation("Autostart is set to: {State}", value);
         return StringComparer.OrdinalIgnoreCase.Compare(value, Application.ExecutablePath) == 0;
     }
-    
+
     private void SetAutoStart(bool enabled)
     {
         using var key = Registry.CurrentUser.OpenSubKey(AutoStartRegistryKey, true);
-        
+
         if (key == null)
             return;
 
         if (enabled)
         {
-            var executablePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            var executablePath = Application.ExecutablePath;
             key.SetValue(AppName, executablePath);
         }
         else
         {
             key.DeleteValue(AppName, false);
         }
+
         logger.LogInformation("Set autostart to: {State}", enabled);
     }
 
     private static string GetKeyName(uint key)
     {
-        if (ProcessSpecialKeys(key) is {} keyName)
+        if (ProcessSpecialKeys(key) is { } keyName)
             return keyName;
-        
+
         try
         {
             var keyCode = (Keys)key;
@@ -172,7 +180,7 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
             return "Unknown key";
         }
     }
-    
+
     private static string? ProcessSpecialKeys(uint key)
     {
         return key switch
