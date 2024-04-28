@@ -31,9 +31,11 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
         form.Icon = new Icon(Constants.DefaultIconFile);
         form.Text = "Randy";
         form.BackColor = _nordDark0;
-        // components = new System.ComponentModel.Container();
         form.AutoScaleMode = AutoScaleMode.Font;
-        form.ClientSize = new Size(500, 200);
+        var screen = Screen.PrimaryScreen?.WorkingArea;
+        var width = screen != null ? screen.Value.Width * 25 / 100 : 600;
+        var height = screen != null ? screen.Value.Height * 20 / 100 : 250;
+        form.ClientSize = new Size(width, height);
         form.FormBorderStyle = Constants.DefaultFormStyle;
         form.MaximizeBox = false;
         form.Padding = new Padding(10);
@@ -51,10 +53,12 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
             TextAlign = ContentAlignment.TopLeft,
             ForeColor = _nordBright4
         };
-        var panel = new Panel
+        var tableLayoutPanel = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill,
-            Padding = new Padding(10)
+            RowCount = 3,
+            ColumnCount = 1,
+            AutoSize = true,
+            Dock = DockStyle.Fill
         };
         var autoStartCheckBox = new CheckBox
         {
@@ -68,7 +72,7 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
         var shortCutLabel = new Label
         {
             Text = "Keyboard shortcut:",
-            Height = 20,
+            AutoSize = true,
             Dock = DockStyle.Top,
             Margin = new Padding(0, 15, 0, 15),
             ForeColor = _nordBrightX
@@ -86,16 +90,16 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
         var otherKeyLabel = KeyPanel($"{GetKeyName(InvisibleForm.OtherKey)}");
         var hotKeyPanel = new Panel
         {
-            Dock = DockStyle.Top,
+            Dock = DockStyle.Fill,
             Height = 25
         };
         hotKeyPanel.Controls.Add(otherKeyLabel);
         hotKeyPanel.Controls.Add(plusLabel);
         hotKeyPanel.Controls.Add(modifierPanel);
-        panel.Controls.Add(hotKeyPanel);
-        panel.Controls.Add(shortCutLabel);
-        panel.Controls.Add(autoStartCheckBox);
-        form.Controls.Add(panel);
+        tableLayoutPanel.Controls.Add(shortCutLabel, 0, 0);
+        tableLayoutPanel.Controls.Add(hotKeyPanel, 0, 1);
+        tableLayoutPanel.Controls.Add(autoStartCheckBox, 0, 2);
+        form.Controls.Add(tableLayoutPanel);
         form.Controls.Add(label);
         autoStartCheckBox.CheckedChanged += (_, _) => SetAutoStart(autoStartCheckBox.Checked);
     }
