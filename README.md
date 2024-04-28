@@ -9,3 +9,4 @@ on each side.
 
 Use `Windows` + `\ \` to use the shortcut.
 
+The application is written in C#, using .NET 8 and WinForms.
