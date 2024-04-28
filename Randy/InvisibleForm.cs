@@ -29,15 +29,18 @@ public class InvisibleForm : Form
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
+    // General
     private const int SwMaximize = 3;
     private const uint WmPaint = 0x000F;
     private const int SwShowNormal = 1;
     private readonly ILogger _logger;
     private readonly MainForm _mainForm;
-    private int _hotkeyId = 1; // ID for the hotkey
-    private readonly uint _wmHotkey = 0x0312; // Windows message for hotkey
-    private uint _modifierKey = 0x0008;
-    private uint _otherKey = (uint)Keys.Oem5; // Backslash
+
+    // Hot key
+    private const int HotkeyId = 1; // ID for the hotkey
+    private const uint WmHotkey = 0x0312; // Windows message for hotkey
+    public const uint ModifierKey = 0x0008; // Windows key
+    public const uint OtherKey = (uint)Keys.Oem5; // Backslash
 
     public InvisibleForm(ILogger logger, MainForm mainForm)
     {
@@ -49,26 +52,23 @@ public class InvisibleForm : Form
         Opacity = 0;
     }
 
-    public void RegisterHotKey(int hotKeyId, uint modifierKey, uint otherKey)
+    public void RegisterHotKey()
     {
-        _hotkeyId = hotKeyId;
-        _modifierKey = modifierKey;
-        _otherKey = otherKey;
         _logger.LogInformation("Registering hotkey");
-        RegisterHotKey(Handle, _hotkeyId, _modifierKey, _otherKey);
+        RegisterHotKey(Handle, HotkeyId, ModifierKey, OtherKey);
     }
 
     public void UnregisterHotKey(object? sender, FormClosingEventArgs e)
     {
         _logger.LogInformation("Unregistering hotkey");
-        UnregisterHotKey(Handle, _hotkeyId);
+        UnregisterHotKey(Handle, HotkeyId);
     }
 
     protected override void WndProc(ref Message m)
     {
         base.WndProc(ref m);
 
-        if (m.Msg != _wmHotkey || m.WParam.ToInt32() != _hotkeyId)
+        if (m.Msg != WmHotkey || m.WParam.ToInt32() != HotkeyId)
         {
             return;
         }
@@ -81,7 +81,7 @@ public class InvisibleForm : Form
             _logger.LogWarning("Using hotkey on main form is not allowed, ignoring request");
             return;
         }
-        
+
         _mainForm.ChangeTrayIconTemporarily();
         ShowWindow(window, SwMaximize); // Maximize the window
 

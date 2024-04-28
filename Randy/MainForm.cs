@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Timer = System.Windows.Forms.Timer;
 
@@ -6,43 +5,47 @@ namespace Randy;
 
 public sealed partial class MainForm : Form
 {
-    private const int WindowsKeyModifier = 0x0008;
-    private const int HotkeyId = 1; // ID for the hotkey
-    private const Keys HotKey = Keys.Oem5; // Backslash
-
-    private const FormBorderStyle DefaultFormStyle = FormBorderStyle.Fixed3D;
-    private const string DefaultIconFile = "../../../assets/randy.ico";
-    private const string ActionIconFile = "../../../assets/randy_go.ico";
+    private readonly ILogger<MainForm> _logger;
     private readonly NotifyIcon _trayIcon;
     private readonly Timer _timer = new();
-    private readonly ILogger<MainForm> _logger;
+    private readonly Size _initialSize;
     private bool _canBeVisible;
 
     public MainForm(ILogger<MainForm> logger)
     {
         InitializeComponent();
         _logger = logger;
+        
+        // Create invisible form to manage hotkey & behaviour
         var invisibleForm = new InvisibleForm(logger, this);
-        invisibleForm.RegisterHotKey(HotkeyId, WindowsKeyModifier, (uint)HotKey);
+        invisibleForm.RegisterHotKey();
 
-        // Events
-        Resize += MinimiseOnResize;
-        FormClosing += invisibleForm.UnregisterHotKey;
+        // Initialise visible main form and minimise it after 1 second
+        var formHandler = new MainFormHandler(logger, this);
+        formHandler.InitialiseForm();
         Minimise(1000);
 
-        // Initialize tray icon
+        // Register events
+        Resize += MinimiseOnResize;
+        FormClosing += invisibleForm.UnregisterHotKey;
+
+        // Initialize tray icon & context menu
         _trayIcon = new NotifyIcon
         {
-            Icon = new Icon(DefaultIconFile),
+            Icon = new Icon(Constants.DefaultIconFile),
             Visible = true
         };
         _trayIcon.MouseDoubleClick += Open;
         UpdateTrayContextMenu();
-
-        // Create form
-        CreateDefaultForm();
+        
+        // Set window size
+        var workingArea = Screen.GetWorkingArea(this);
+        var centerPoint = new Point(workingArea.Width / 2, workingArea.Height / 2);
+        Location = new Point(centerPoint.X - Size.Width / 2, centerPoint.Y - Size.Height / 2);
+        _initialSize = Size;
     }
 
+    // Updated based on the current state of the window
     private void UpdateTrayContextMenu()
     {
         _trayIcon.ContextMenuStrip?.Dispose();
@@ -60,28 +63,6 @@ public sealed partial class MainForm : Form
         _trayIcon.ContextMenuStrip = cm;
     }
 
-    private void CreateDefaultForm()
-    {
-        ShowInTaskbar = true;
-        Icon = new Icon(DefaultIconFile);
-        Text = "Randy";
-        BackColor = ColorTranslator.FromHtml("#3B4252");
-        components = new System.ComponentModel.Container();
-        AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(500, 200);
-        FormBorderStyle = DefaultFormStyle;
-        MaximizeBox = false;
-        Notifier.SetMessage(this, "Randy is ready for action!");
-    }
-
-    protected override void OnLoad(EventArgs e)
-    {
-        base.OnLoad(e);
-        var workingArea = Screen.GetWorkingArea(this);
-        var centerPoint = new Point(workingArea.Width / 2, workingArea.Height / 2);
-        Location = new Point(centerPoint.X - Size.Width / 2, centerPoint.Y - Size.Height / 2);
-    }
-
     protected override void SetVisibleCore(bool value)
     {
         if (WindowState == FormWindowState.Minimized && !_canBeVisible)
@@ -95,12 +76,12 @@ public sealed partial class MainForm : Form
     public void ChangeTrayIconTemporarily()
     {
         _logger.LogInformation("Changing icon temporarily");
-        _trayIcon.Icon = new Icon(ActionIconFile);
+        _trayIcon.Icon = new Icon(Constants.ActionIconFile);
         _timer.Interval = 1000;
         _timer.Tick += (_, _) =>
         {
             ResetTimerIfEnabled();
-            _trayIcon.Icon = new Icon(DefaultIconFile);
+            _trayIcon.Icon = new Icon(Constants.DefaultIconFile);
         };
         _timer.Start();
     }
@@ -140,9 +121,10 @@ public sealed partial class MainForm : Form
         _logger.LogInformation("Opening window");
         _canBeVisible = true;
         SetVisibleCore(true);
+        Size = _initialSize;
         ShowInTaskbar = true;
         WindowState = FormWindowState.Normal;
-        FormBorderStyle = DefaultFormStyle;
+        FormBorderStyle = Constants.DefaultFormStyle;
         Activate();
         UpdateTrayContextMenu();
     }
