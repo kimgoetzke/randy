@@ -82,6 +82,7 @@ public class InvisibleForm : Form
             return;
         }
         
+        _mainForm.ChangeTrayIconTemporarily();
         ShowWindow(window, SwMaximize); // Maximize the window
 
         if (!GetWindowRect(window, out var rect))

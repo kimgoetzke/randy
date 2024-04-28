@@ -10,11 +10,13 @@ public sealed partial class MainForm : Form
     private const int HotkeyId = 1; // ID for the hotkey
     private const Keys HotKey = Keys.Oem5; // Backslash
 
-    private const FormBorderStyle DefaultFormStyle = FormBorderStyle.FixedDialog;
-    private const string IconFile = "../../../assets/randy.ico";
+    private const FormBorderStyle DefaultFormStyle = FormBorderStyle.Fixed3D;
+    private const string DefaultIconFile = "../../../assets/randy.ico";
+    private const string ActionIconFile = "../../../assets/randy_go.ico";
     private readonly NotifyIcon _trayIcon;
     private readonly Timer _timer = new();
     private readonly ILogger<MainForm> _logger;
+    private bool _canBeVisible;
 
     public MainForm(ILogger<MainForm> logger)
     {
@@ -22,16 +24,16 @@ public sealed partial class MainForm : Form
         _logger = logger;
         var invisibleForm = new InvisibleForm(logger, this);
         invisibleForm.RegisterHotKey(HotkeyId, WindowsKeyModifier, (uint)HotKey);
-        
+
         // Events
         Resize += MinimiseOnResize;
         FormClosing += invisibleForm.UnregisterHotKey;
         Minimise(1000);
-        
+
         // Initialize tray icon
         _trayIcon = new NotifyIcon
         {
-            Icon = new Icon(IconFile),
+            Icon = new Icon(DefaultIconFile),
             Visible = true
         };
         _trayIcon.MouseDoubleClick += Open;
@@ -53,6 +55,7 @@ public sealed partial class MainForm : Form
         {
             cm.Items.Add("Minimise", null, Minimise);
         }
+
         cm.Items.Add("Exit", null, Exit);
         _trayIcon.ContextMenuStrip = cm;
     }
@@ -60,7 +63,7 @@ public sealed partial class MainForm : Form
     private void CreateDefaultForm()
     {
         ShowInTaskbar = true;
-        Icon = new Icon(IconFile);
+        Icon = new Icon(DefaultIconFile);
         Text = "Randy";
         BackColor = ColorTranslator.FromHtml("#3B4252");
         components = new System.ComponentModel.Container();
@@ -78,7 +81,30 @@ public sealed partial class MainForm : Form
         var centerPoint = new Point(workingArea.Width / 2, workingArea.Height / 2);
         Location = new Point(centerPoint.X - Size.Width / 2, centerPoint.Y - Size.Height / 2);
     }
-    
+
+    protected override void SetVisibleCore(bool value)
+    {
+        if (WindowState == FormWindowState.Minimized && !_canBeVisible)
+        {
+            value = false;
+        }
+
+        base.SetVisibleCore(value);
+    }
+
+    public void ChangeTrayIconTemporarily()
+    {
+        _logger.LogInformation("Changing icon temporarily");
+        _trayIcon.Icon = new Icon(ActionIconFile);
+        _timer.Interval = 1000;
+        _timer.Tick += (_, _) =>
+        {
+            ResetTimerIfEnabled();
+            _trayIcon.Icon = new Icon(DefaultIconFile);
+        };
+        _timer.Start();
+    }
+
     private void MinimiseOnResize(object? sender, EventArgs e)
     {
         if (WindowState == FormWindowState.Minimized)
@@ -86,7 +112,7 @@ public sealed partial class MainForm : Form
             Minimise(null, EventArgs.Empty);
         }
     }
-    
+
     private void Minimise(int interval)
     {
         _timer.Interval = interval;
@@ -95,19 +121,36 @@ public sealed partial class MainForm : Form
         _logger.LogInformation("Starting timer");
     }
 
+    private void ResetTimerIfEnabled()
+    {
+        if (!_timer.Enabled)
+            return;
+
+        _logger.LogInformation("Stopping timer");
+        _timer.Stop();
+        _timer.Tick -= Minimise;
+        _timer.Dispose();
+    }
+
+
     #region Tray icon context menu actions
+
     private void Open(object? sender, EventArgs e)
     {
+        _logger.LogInformation("Opening window");
+        _canBeVisible = true;
+        SetVisibleCore(true);
         ShowInTaskbar = true;
         WindowState = FormWindowState.Normal;
         FormBorderStyle = DefaultFormStyle;
         Activate();
         UpdateTrayContextMenu();
     }
-    
+
     private void Minimise(object? sender, EventArgs e)
     {
         _logger.LogInformation("Minimising window");
+        _canBeVisible = false;
         ResetTimerIfEnabled();
         WindowState = FormWindowState.Minimized;
         FormBorderStyle = FormBorderStyle.None;
@@ -115,18 +158,7 @@ public sealed partial class MainForm : Form
         UpdateTrayContextMenu();
     }
 
-    private void ResetTimerIfEnabled()
-    {
-        if (!_timer.Enabled) 
-            return;
-        
-        _logger.LogInformation("Stopping timer");
-        _timer.Stop();
-        _timer.Tick -= Minimise;
-        _timer.Dispose();
-    }
-
     private void Exit(object? sender, EventArgs e) => Close();
-    
+
     #endregion
 }
