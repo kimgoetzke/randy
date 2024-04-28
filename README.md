@@ -7,6 +7,6 @@
 A basic Windows application that only has one purpose: near-maximising the selected window i.e. maximising minus 20 px
 on each side.
 
-Use `Windows` + `\ \` to use the shortcut.
+Use `Windows` + `\` to use the shortcut.
 
 The application is written in C#, using .NET 8 and WinForms.
