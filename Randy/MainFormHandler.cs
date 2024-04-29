@@ -10,7 +10,7 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
 {
     private const string AutoStartRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string AppName = "Randy";
-
+    private Size _defaultWindowSize;
     private readonly Color _nordDark0 = ColorTranslator.FromHtml("#2e3440");
     private readonly Color _nordDark3 = ColorTranslator.FromHtml("#4c566a");
     private readonly Color _nordDark9 = ColorTranslator.FromHtml("#6d7a96");
@@ -39,6 +39,7 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
         form.FormBorderStyle = Constants.DefaultFormStyle;
         form.MaximizeBox = false;
         form.Padding = new Padding(10);
+        _defaultWindowSize = form.Size;
     }
 
     private void InitialiseContent()
@@ -196,5 +197,10 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
             0x0010 => "Alt",
             _ => null
         };
+    }
+
+    public void SetWindowSize()
+    {
+        form.Size = _defaultWindowSize;
     }
 }

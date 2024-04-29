@@ -8,6 +8,7 @@ public sealed partial class MainForm : Form
     private readonly ILogger<MainForm> _logger;
     private readonly NotifyIcon _trayIcon;
     private readonly Timer _timer = new();
+    private readonly MainFormHandler _formHandler;
     private readonly Size _initialSize;
     private bool _canBeVisible;
 
@@ -15,18 +16,18 @@ public sealed partial class MainForm : Form
     {
         InitializeComponent();
         _logger = logger;
-        
+
         // Create invisible form to manage hotkey & behaviour
         var invisibleForm = new InvisibleForm(logger, this);
         invisibleForm.RegisterHotKey();
 
         // Initialise visible main form and minimise it after 1 second
-        var formHandler = new MainFormHandler(logger, this);
-        formHandler.InitialiseForm();
+        _formHandler = new MainFormHandler(logger, this);
+        _formHandler.InitialiseForm();
         Minimise(1000);
 
         // Register events
-        Resize += MinimiseOnResize;
+        Resize += ProcessResizeEvent;
         FormClosing += invisibleForm.UnregisterHotKey;
 
         // Initialize tray icon & context menu
@@ -37,12 +38,6 @@ public sealed partial class MainForm : Form
         };
         _trayIcon.MouseDoubleClick += Open;
         UpdateTrayContextMenu();
-        
-        // Set window size
-        var workingArea = Screen.GetWorkingArea(this);
-        var centerPoint = new Point(workingArea.Width / 2, workingArea.Height / 2);
-        Location = new Point(centerPoint.X - Size.Width / 2, centerPoint.Y - Size.Height / 2);
-        _initialSize = Size;
     }
 
     // Updated based on the current state of the window
@@ -86,11 +81,16 @@ public sealed partial class MainForm : Form
         _timer.Start();
     }
 
-    private void MinimiseOnResize(object? sender, EventArgs e)
+    private void ProcessResizeEvent(object? sender, EventArgs e)
     {
-        if (WindowState == FormWindowState.Minimized)
+        switch (WindowState)
         {
-            Minimise(null, EventArgs.Empty);
+            case FormWindowState.Minimized:
+                Minimise(null, EventArgs.Empty);
+                break;
+            case FormWindowState.Normal or FormWindowState.Maximized:
+                Open(null, EventArgs.Empty);
+                break;
         }
     }
 
@@ -121,7 +121,7 @@ public sealed partial class MainForm : Form
         _logger.LogInformation("Opening window");
         _canBeVisible = true;
         SetVisibleCore(true);
-        Size = _initialSize;
+        _formHandler.SetWindowSize();
         ShowInTaskbar = true;
         WindowState = FormWindowState.Normal;
         FormBorderStyle = Constants.DefaultFormStyle;
