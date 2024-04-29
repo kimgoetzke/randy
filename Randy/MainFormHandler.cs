@@ -38,7 +38,7 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
         form.ClientSize = new Size(width, height);
         form.FormBorderStyle = Constants.DefaultFormStyle;
         form.MaximizeBox = false;
-        form.Padding = new Padding(10);
+        form.Padding = new Padding(20);
         _defaultWindowSize = form.Size;
     }
 
@@ -49,16 +49,17 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
         {
             Text = "Randy is ready for action!",
             Font = new Font(form.Font.FontFamily, 15, FontStyle.Bold),
-            Height = 50,
+            AutoSize = true,
             Dock = DockStyle.Top,
             TextAlign = ContentAlignment.TopLeft,
             ForeColor = _nordBright4
         };
         var tableLayoutPanel = new TableLayoutPanel
         {
-            RowCount = 3,
+            RowCount = 2,
             ColumnCount = 1,
             AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowOnly,
             Dock = DockStyle.Fill
         };
         var autoStartCheckBox = new CheckBox
@@ -66,40 +67,43 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
             Text = "Start with Windows (recommended)",
             AutoSize = true,
             Dock = DockStyle.Bottom,
-            Margin = new Padding(0, 15, 0, 15),
             Checked = IsAutoStartEnabled(),
             ForeColor = _nordBrightX
         };
         var shortCutLabel = new Label
         {
-            Text = "Keyboard shortcut:",
+            Text = "Keyboard shortcut: ",
+            // Font = new Font(form.Font.FontFamily, 10, FontStyle.Regular),
             AutoSize = true,
-            Dock = DockStyle.Top,
-            Margin = new Padding(0, 15, 0, 15),
+            TextAlign = ContentAlignment.MiddleLeft,
+            Dock = DockStyle.Left,
             ForeColor = _nordBrightX
         };
         var modifierPanel = KeyPanel($"{GetKeyName(InvisibleForm.ModifierKey)}");
         var plusLabel = new Label
         {
             Text = " + ",
-            AutoSize = true,
             Font = new Font(form.Font.FontFamily, 12, FontStyle.Regular),
+            AutoSize = true,
             Dock = DockStyle.Left,
             TextAlign = ContentAlignment.MiddleLeft,
             ForeColor = _nordBrightX
         };
-        var otherKeyLabel = KeyPanel($"{GetKeyName(InvisibleForm.OtherKey)}");
         var hotKeyPanel = new Panel
         {
-            Dock = DockStyle.Fill,
-            Height = 25
+            Dock = DockStyle.Left,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = new Padding(0, 40, 0, 10),
+            MinimumSize = new Size(0, 30)
         };
+        var otherKeyLabel = KeyPanel($"{GetKeyName(InvisibleForm.OtherKey)}");
         hotKeyPanel.Controls.Add(otherKeyLabel);
         hotKeyPanel.Controls.Add(plusLabel);
         hotKeyPanel.Controls.Add(modifierPanel);
-        tableLayoutPanel.Controls.Add(shortCutLabel, 0, 0);
-        tableLayoutPanel.Controls.Add(hotKeyPanel, 0, 1);
-        tableLayoutPanel.Controls.Add(autoStartCheckBox, 0, 2);
+        hotKeyPanel.Controls.Add(shortCutLabel);
+        tableLayoutPanel.Controls.Add(hotKeyPanel, 0, 0);
+        tableLayoutPanel.Controls.Add(autoStartCheckBox, 0, 1);
         form.Controls.Add(tableLayoutPanel);
         form.Controls.Add(label);
         autoStartCheckBox.CheckedChanged += (_, _) => SetAutoStart(autoStartCheckBox.Checked);
@@ -112,17 +116,11 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
             Text = text,
             AutoSize = true,
             Font = new Font(form.Font.FontFamily, 8, FontStyle.Bold),
-            Dock = DockStyle.Fill,
-            TextAlign = ContentAlignment.MiddleCenter,
+            Dock = DockStyle.Left,
+            TextAlign = ContentAlignment.TopCenter,
             ForeColor = _nordDark0
         };
-        var panel = new PanelWithBorder(_nordDark9)
-        {
-            BackColor = _nordDark3,
-            Padding = new Padding(5),
-            AutoSize = true,
-            Dock = DockStyle.Left
-        };
+        var panel = new PanelWithBorder(_nordDark9, _nordDark3);
         panel.Controls.Add(label);
         return panel;
     }
