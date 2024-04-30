@@ -11,6 +11,7 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
 {
     private const string AutoStartRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string AppName = "Randy";
+    private ShortCutHandler shortCutHandler => new(logger);
     private Size _defaultWindowSize;
     private readonly Color _nordDark0 = ColorTranslator.FromHtml("#2e3440");
     private readonly Color _nordDark3 = ColorTranslator.FromHtml("#4c566a");
@@ -160,6 +161,7 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
         {
             var executablePath = Application.ExecutablePath;
             key.SetValue(AppName, executablePath);
+            shortCutHandler.Create();
         }
         else
         {
