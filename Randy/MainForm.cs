@@ -11,7 +11,6 @@ public sealed partial class MainForm : Form
     private readonly NotifyIcon _trayIcon;
     private readonly Timer _timer = new();
     private readonly MainFormHandler _formHandler;
-    private readonly Size _initialSize;
     private bool _canBeVisible;
 
     public MainForm(ILogger<MainForm> logger)
