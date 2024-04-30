@@ -25,7 +25,14 @@ public sealed partial class MainForm : Form
         // Initialise visible main form and minimise it after 1 second
         _formHandler = new MainFormHandler(logger, this);
         _formHandler.InitialiseForm();
-        Minimise(1000);
+        
+        // Auto-minimise if not in development environment
+        var env = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production";
+        _logger.LogInformation("Environment: {E}", env);
+        if (env != "Development")
+        {
+            Minimise(1000);
+        }
 
         // Register events
         Resize += ProcessResizeEvent;
