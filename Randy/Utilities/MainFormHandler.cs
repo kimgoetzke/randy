@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Randy.Controls;
+using Randy.Core;
 
-namespace Randy;
+namespace Randy.Utilities;
 
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public class MainFormHandler(ILogger<Form> logger, Form form)

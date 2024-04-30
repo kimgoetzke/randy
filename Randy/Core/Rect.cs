@@ -1,4 +1,4 @@
-﻿namespace Randy;
+﻿namespace Randy.Core;
 
 public struct Rect(int left, int top, int right, int bottom)
 {

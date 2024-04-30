@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 
-namespace Randy;
+namespace Randy.Core;
 
 /**
  * This form contains the logic for the hotkey. It is permanently invisible.

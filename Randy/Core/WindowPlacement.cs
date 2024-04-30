@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Randy;
+namespace Randy.Core;
 
 [SuppressMessage("ReSharper", "NotAccessedField.Global")]
 public struct WindowPlacement(
