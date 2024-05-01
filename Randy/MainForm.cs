@@ -133,6 +133,7 @@ public sealed partial class MainForm : Form
         ShowInTaskbar = true;
         WindowState = FormWindowState.Normal;
         FormBorderStyle = Constants.DefaultFormStyle;
+        Icon = new Icon(Constants.DefaultIconFile);
         Activate();
         UpdateTrayContextMenu();
     }
