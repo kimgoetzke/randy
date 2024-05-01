@@ -10,6 +10,8 @@
         <DebugType>None</DebugType>
         <DebugSymbols>false</DebugSymbols>
         <RootNamespace>Randy</RootNamespace>
+        <Version>2</Version>
+        <PublisherName>Kim Goetzke</PublisherName>
     </PropertyGroup>
 
     <ItemGroup>

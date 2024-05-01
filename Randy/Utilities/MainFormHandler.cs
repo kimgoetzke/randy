@@ -122,7 +122,7 @@ public class MainFormHandler(Form form)
         return panel;
     }
 
-    // TODO: Replace with on value stored on disk
+    // TODO: Replace with value stored on disk
     private static bool IsAutoStartEnabled()
     {
         var enabledInRegistry = RegistryKeyHandler.IsEnabled();
