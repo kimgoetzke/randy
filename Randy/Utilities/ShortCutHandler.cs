@@ -1,31 +1,55 @@
 using Microsoft.Extensions.Logging;
-using Vanara.PInvoke;
 using Vanara.Windows.Shell;
 
 namespace Randy.Utilities;
 
-public class ShortCutHandler(ILogger logger)
+public static class ShortCutHandler
 {
-    public void Create()
+    private static ILogger logger => LoggerProvider.CreateLogger(nameof(ShortCutHandler));
+    private const string FileName = "Randy.lnk";
+
+    public static bool Exists()
     {
-        logger.LogInformation("Creating startup shortcut for Randy");
+        var folder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+        var fullPath = Path.Combine(folder, FileName);
+        var result = File.Exists(fullPath);
+        logger.LogInformation("Startup shortcut {Outcome} at: {Path}", result ? "exists" : "does NOT exist", fullPath);
+        return result;
+    }
+
+    public static void Create()
+    {
+        var startUpFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+        logger.LogInformation("Creating startup shortcut...");
+        logger.LogInformation(" - in folder: {Destination}", startUpFolder);
+        logger.LogInformation(" - linking to: {Target}", Application.ExecutablePath);
         try
         {
-            const string fileName = "Randy.lnk";
-            var destination = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-            var targetItem = Shell32.SHCreateItemFromParsingName<Shell32.IShellItem>(Application.ExecutablePath);
-            logger.LogInformation("Destination: {D}", destination);
-            logger.LogInformation("Target name: {T}", Application.ExecutablePath);
-            logger.LogInformation("Target item: {T}", targetItem);
-
-            var shellLink = new ShellLink(Application.ExecutablePath);
-            shellLink.Description = "Startup link for Randy";
-            shellLink.WorkingDirectory = destination;
-            shellLink.SaveAs(Path.Combine(destination, fileName));
+            using var lnk = new ShellLink(
+                Application.ExecutablePath, "/p", startUpFolder, "Startup link for Randy"
+            );
+            lnk.RunAsAdministrator = true;
+            lnk.Properties.ReadOnly = false;
+            lnk.SaveAs(Path.Combine(startUpFolder, FileName));
         }
         catch (Exception ex)
         {
-         logger.LogError(ex, "Failed to create shortcut");   
+            logger.LogError(ex, "Failed to create shortcut");
+        }
+    }
+
+    public static void Delete()
+    {
+        var folder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+        var fullPath = Path.Combine(folder, FileName);
+        try
+        {
+            File.Delete(fullPath);
+            logger.LogInformation("Deleted startup shortcut: {Path}", fullPath);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to delete shortcut at {Path}", fullPath);
         }
     }
 }

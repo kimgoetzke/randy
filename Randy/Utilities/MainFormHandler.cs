@@ -1,17 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using Randy.Controls;
 using Randy.Core;
 
 namespace Randy.Utilities;
 
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
-public class MainFormHandler(ILogger<Form> logger, Form form)
+public class MainFormHandler(Form form)
 {
-    private const string AutoStartRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string AppName = "Randy";
-    private ShortCutHandler shortCutHandler => new(logger);
     private Size _defaultWindowSize;
     private readonly Color _nordDark0 = ColorTranslator.FromHtml("#2e3440");
     private readonly Color _nordDark3 = ColorTranslator.FromHtml("#4c566a");
@@ -127,48 +122,25 @@ public class MainFormHandler(ILogger<Form> logger, Form form)
         return panel;
     }
 
-
-    private bool IsAutoStartEnabled()
+    // TODO: Replace with on value stored on disk
+    private static bool IsAutoStartEnabled()
     {
-        using var key = Registry.CurrentUser.OpenSubKey(AutoStartRegistryKey);
-
-        if (key == null)
-        {
-            logger.LogWarning("Could not open registry key: {Key}", AutoStartRegistryKey);
-            return false;
-        }
-
-        var value = (string?)key.GetValue(AppName);
-
-        if (string.IsNullOrEmpty(value))
-        {
-            logger.LogInformation("Autostart is not enabled");
-            return false;
-        }
-
-        logger.LogInformation("Autostart is set to: {State}", value);
-        return StringComparer.OrdinalIgnoreCase.Compare(value, Application.ExecutablePath) == 0;
+        var enabledInRegistry = RegistryKeyHandler.IsEnabled();
+        var shortcutExists = ShortCutHandler.Exists();
+        return enabledInRegistry || shortcutExists;
     }
 
-    private void SetAutoStart(bool enabled)
+    private static void SetAutoStart(bool enabled)
     {
-        using var key = Registry.CurrentUser.OpenSubKey(AutoStartRegistryKey, true);
-
-        if (key == null)
-            return;
-
+        RegistryKeyHandler.SetEnabled(enabled);
         if (enabled)
         {
-            var executablePath = Application.ExecutablePath;
-            key.SetValue(AppName, executablePath);
-            shortCutHandler.Create();
+            ShortCutHandler.Create();
         }
         else
         {
-            key.DeleteValue(AppName, false);
+            ShortCutHandler.Delete();
         }
-
-        logger.LogInformation("Set autostart to: {State}", enabled);
     }
 
     private static string GetKeyName(uint key)
