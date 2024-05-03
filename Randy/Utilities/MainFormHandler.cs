@@ -1,12 +1,16 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Randy.Controls;
 using Randy.Core;
+using CheckBox = System.Windows.Forms.CheckBox;
+using Label = System.Windows.Forms.Label;
+using Panel = System.Windows.Forms.Panel;
 
 namespace Randy.Utilities;
 
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
-public class MainFormHandler(Form form)
+public class MainFormHandler(Form form, Config config)
 {
+    private const int Multiplier = 10;
     private Size _defaultWindowSize;
     private readonly Color _nordDark0 = ColorTranslator.FromHtml("#2e3440");
     private readonly Color _nordDark3 = ColorTranslator.FromHtml("#4c566a");
@@ -53,24 +57,25 @@ public class MainFormHandler(Form form)
         };
         var tableLayoutPanel = new TableLayoutPanel
         {
-            RowCount = 2,
+            RowCount = 4,
             ColumnCount = 1,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowOnly,
             Dock = DockStyle.Fill
         };
-        var autoStartCheckBox = new CheckBox
-        {
-            Text = "Start with Windows (recommended)",
-            AutoSize = true,
-            Dock = DockStyle.Bottom,
-            Checked = IsAutoStartEnabled(),
-            ForeColor = _nordBrightX
-        };
+        tableLayoutPanel.Controls.Add(HotKeyPanel(), 0, 0);
+        var (sliderLabel, slider) = PaddingSlider();
+        tableLayoutPanel.Controls.Add(sliderLabel, 0, 1);
+        tableLayoutPanel.Controls.Add(slider, 0, 2);
+        tableLayoutPanel.Controls.Add(AutoStartCheckBox(), 0, 3);
+        form.Controls.Add(tableLayoutPanel);
+    }
+
+    private Panel HotKeyPanel()
+    {
         var shortCutLabel = new Label
         {
             Text = "Keyboard shortcut: ",
-            // Font = new Font(form.Font.FontFamily, 10, FontStyle.Regular),
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
             Dock = DockStyle.Left,
@@ -91,7 +96,7 @@ public class MainFormHandler(Form form)
             Dock = DockStyle.Left,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            Margin = new Padding(0, 40, 0, 10),
+            Margin = new Padding(0, 10, 0, 10),
             MinimumSize = new Size(0, 30)
         };
         var otherKeyLabel = KeyPanel($"{GetKeyName(InvisibleForm.OtherKey)}");
@@ -99,11 +104,54 @@ public class MainFormHandler(Form form)
         hotKeyPanel.Controls.Add(plusLabel);
         hotKeyPanel.Controls.Add(modifierPanel);
         hotKeyPanel.Controls.Add(shortCutLabel);
-        tableLayoutPanel.Controls.Add(hotKeyPanel, 0, 0);
-        tableLayoutPanel.Controls.Add(autoStartCheckBox, 0, 1);
-        form.Controls.Add(tableLayoutPanel);
-        form.Controls.Add(label);
-        autoStartCheckBox.CheckedChanged += (_, _) => SetAutoStart(autoStartCheckBox.Checked);
+        return hotKeyPanel;
+    }
+
+    private (Panel sliderLabel, TrackBar slider) PaddingSlider()
+    {
+        var titleLabel = new Label
+        {
+            Text = "Padding: ",
+            AutoSize = true,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Dock = DockStyle.Left,
+            ForeColor = _nordBrightX
+        };
+        var valueLabel = new Label
+        {
+            Text = config.padding + " px",
+            AutoSize = true,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Dock = DockStyle.Left,
+            ForeColor = _nordBrightX
+        };
+        var slider = new TrackBar
+        {
+            Minimum = 1,
+            Maximum = 10,
+            Value = config.padding / Multiplier,
+            TickFrequency = 1,
+            TickStyle = TickStyle.BottomRight,
+            AutoSize = true,
+            Dock = DockStyle.Fill,
+            ForeColor = _nordAccent9
+        };
+        slider.ValueChanged += (_, _) =>
+        {
+            config.padding = slider.Value * Multiplier;
+            valueLabel.Text = slider.Value * Multiplier + " px";
+        };
+        var sliderLabel = new Panel
+        {
+            Dock = DockStyle.Left,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = new Padding(0, 0, 0, 10),
+            MinimumSize = new Size(0, 30)
+        };
+        sliderLabel.Controls.Add(valueLabel);
+        sliderLabel.Controls.Add(titleLabel);
+        return (sliderLabel, slider);
     }
 
     private PanelWithBorder KeyPanel(string text)
@@ -120,6 +168,20 @@ public class MainFormHandler(Form form)
         var panel = new PanelWithBorder(_nordDark9, _nordDark3);
         panel.Controls.Add(label);
         return panel;
+    }
+
+    private CheckBox AutoStartCheckBox()
+    {
+        var autoStartCheckBox = new CheckBox
+        {
+            Text = "Start with Windows (recommended)",
+            AutoSize = true,
+            Dock = DockStyle.Bottom,
+            Checked = IsAutoStartEnabled(),
+            ForeColor = _nordBrightX
+        };
+        autoStartCheckBox.CheckedChanged += (_, _) => SetAutoStart(autoStartCheckBox.Checked);
+        return autoStartCheckBox;
     }
 
     // TODO: Replace with value stored on disk
@@ -143,6 +205,9 @@ public class MainFormHandler(Form form)
         }
     }
 
+    /**
+     * Returns human-readable keyboard key names based on unit inputs.
+     */
     private static string GetKeyName(uint key)
     {
         if (ProcessSpecialKeys(key) is { } keyName)

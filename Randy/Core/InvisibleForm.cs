@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
+using Randy.Utilities;
 
 namespace Randy.Core;
 
@@ -35,6 +36,7 @@ public class InvisibleForm : Form
     private const int SwShowNormal = 1;
     private readonly ILogger _logger;
     private readonly MainForm _mainForm;
+    private readonly Config _config;
 
     // Hot key
     private const int HotkeyId = 1; // ID for the hotkey
@@ -42,10 +44,11 @@ public class InvisibleForm : Form
     public const uint ModifierKey = 0x0008; // Windows key
     public const uint OtherKey = (uint)Keys.Oem5; // Backslash
 
-    public InvisibleForm(ILogger logger, MainForm mainForm)
+    public InvisibleForm(ILogger logger, MainForm mainForm, Config config)
     {
         _logger = logger;
         _mainForm = mainForm;
+        _config = config;
         ShowInTaskbar = false;
         FormBorderStyle = FormBorderStyle.None;
         WindowState = FormWindowState.Minimized;
@@ -92,10 +95,10 @@ public class InvisibleForm : Form
         }
 
         // Calculate new window size
-        var newX = rect.Left + 30;
-        var newY = rect.Top + 30;
-        var newWidth = rect.Right - rect.Left - 60;
-        var newHeight = rect.Bottom - rect.Top - 60;
+        var newX = rect.Left + _config.padding;
+        var newY = rect.Top + _config.padding;
+        var newWidth = rect.Right - rect.Left - (_config.padding * 2);
+        var newHeight = rect.Bottom - rect.Top - (_config.padding * 2);
 
         // Set the new window placement
         var wp = new WindowPlacement

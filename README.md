@@ -4,11 +4,11 @@
 
 # Meet Randy
 
-A Windows application that only has one purpose: near-maximising the active window, i.e. maximising minus 20
-px on each side, using a hotkey.
+A Windows application that only has one purpose: near-maximising (maximise minus padding) the active window using a
+hotkey. By default, the padding is 30 px but it can be configured in the settings.
 
-Hit `Windows` + `\` to use the hotkey. This requires only one hand and is next to `Windows` + `z` which is a default
-Windows hotkey to creates window groups
+Hit `Win` + `\` to use the hotkey. This requires only one hand and is next to `Win` + `Z` which is a default
+Windows hotkey to creates window groups.
 
 The application is written in C#, using .NET 8 and WinForms. The latter may be an awful framework but was the fastest
 way to get this done.

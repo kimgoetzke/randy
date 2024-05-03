@@ -17,15 +17,16 @@ public sealed partial class MainForm : Form
     {
         InitializeComponent();
         _logger = logger;
+        var config = new Config();
 
         // Create invisible form to manage hotkey & behaviour
-        var invisibleForm = new InvisibleForm(logger, this);
+        var invisibleForm = new InvisibleForm(logger, this, config);
         invisibleForm.RegisterHotKey();
 
         // Initialise visible main form and minimise it after 1 second
-        _formHandler = new MainFormHandler(this);
+        _formHandler = new MainFormHandler(this, config);
         _formHandler.InitialiseForm();
-        
+
         // Auto-minimise if not in development environment
         var env = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production";
         _logger.LogInformation("Environment: {E}", env);
