@@ -5,6 +5,9 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace Randy;
 
+/**
+ * Main form of the application which is responsible for managing the tray icon and the window state.
+ */
 public sealed partial class MainForm : Form
 {
     private readonly ILogger<MainForm> _logger;
@@ -14,6 +17,7 @@ public sealed partial class MainForm : Form
     private readonly MainFormHandler _formHandler;
     private readonly Colours _colours = new();
     private bool _canBeVisible;
+    private bool _isMinimised;
 
     public MainForm(ILogger<MainForm> logger)
     {
@@ -36,11 +40,8 @@ public sealed partial class MainForm : Form
         _logger.LogInformation("Environment: {E}", env);
         if (env != "Development")
         {
-            Minimise(1000);
+            Minimise();
         }
-
-        // Register events
-        FormClosing += invisibleForm.UnregisterHotKey;
 
         // Initialize tray icon & context menu
         _trayIcon = new NotifyIcon
@@ -48,8 +49,12 @@ public sealed partial class MainForm : Form
             Icon = new Icon(Constants.DefaultIconFile),
             Visible = true
         };
-        _trayIcon.MouseDoubleClick += Open;
         UpdateTrayContextMenu();
+
+        // Register events
+        FormClosing += invisibleForm.UnregisterHotKey;
+        Resize += ProcessResizeEvent;
+        _trayIcon.MouseDoubleClick += Open;
     }
 
     // Updated based on the current state of the window
@@ -57,6 +62,8 @@ public sealed partial class MainForm : Form
     {
         _trayIcon.ContextMenuStrip?.Dispose();
         var cm = new ContextMenuStrip();
+        cm.BackColor = _colours.NordDark0;
+        cm.ForeColor = _colours.NordBrightX;
         if (WindowState == FormWindowState.Minimized)
         {
             cm.Items.Add("Open", null, Open);
@@ -70,18 +77,6 @@ public sealed partial class MainForm : Form
         _trayIcon.ContextMenuStrip = cm;
     }
 
-    protected override void SetVisibleCore(bool value)
-    {
-        value = WindowState switch
-        {
-            FormWindowState.Minimized when !_canBeVisible => false,
-            FormWindowState.Normal when _canBeVisible => true,
-            _ => value
-        };
-
-        base.SetVisibleCore(value);
-    }
-
     public void ChangeTrayIconTemporarily()
     {
         _logger.LogInformation("Changing icon temporarily");
@@ -89,69 +84,89 @@ public sealed partial class MainForm : Form
         _trayIconTimer.Interval = 1000;
         _trayIconTimer.Tick += (_, _) =>
         {
-            ResetTimerIfEnabled(_trayIconTimer);
+            ResetTimer(_trayIconTimer);
             _trayIcon.Icon = new Icon(Constants.DefaultIconFile);
         };
         _trayIconTimer.Start();
     }
 
-    private void Minimise(int interval)
+    private void Minimise()
     {
-        _minimiseTimer.Interval = interval;
-        _minimiseTimer.Tick += Minimise;
+        _minimiseTimer.Interval = Constants.MinimiseInterval;
+        _minimiseTimer.Tick += (_, _) =>
+        {
+            ResetTimer(_minimiseTimer);
+            Minimise(null, EventArgs.Empty);
+        };
         _minimiseTimer.Start();
         _logger.LogInformation("Starting timer");
     }
 
-    private void ResetTimerIfEnabled(Timer timer)
+    private void ResetTimer(Timer timer)
     {
         if (!timer.Enabled)
             return;
 
         _logger.LogInformation("Stopping: {TimerName}", timer.Tag);
         timer.Stop();
-        timer.Tick -= Minimise;
         timer.Dispose();
     }
 
+    #region Window state events
 
-    #region Tray icon context menu actions
+    private void ProcessResizeEvent(object? sender, EventArgs e)
+    {
+        switch (WindowState)
+        {
+            case FormWindowState.Minimized:
+                Minimise(null, EventArgs.Empty);
+                _isMinimised = true;
+                break;
+            case FormWindowState.Normal:
+                _isMinimised = false;
+                break;
+            case FormWindowState.Maximized:
+                _isMinimised = false;
+                break;
+            default:
+                return;
+        }
+    }
 
     private void Open(object? sender, EventArgs e)
     {
-        if (WindowState == FormWindowState.Normal)
+        if (WindowState == FormWindowState.Normal && !_isMinimised)
         {
-            _logger.LogInformation("Window is already open");
             return;
         }
 
         _logger.LogInformation("Opening window");
         _canBeVisible = true;
+        _isMinimised = false;
         WindowState = FormWindowState.Normal;
         ShowInTaskbar = true;
         FormBorderStyle = Constants.DefaultFormStyle;
         Icon = new Icon(Constants.DefaultIconFile);
+        UpdateTrayContextMenu();
         SetVisibleCore(true);
         Activate();
         _formHandler.SetWindowSizeAndPosition();
-        UpdateTrayContextMenu();
     }
 
-    // TODO: Allow minimising from window itself, not just tray icon
     private void Minimise(object? sender, EventArgs e)
     {
-        if (WindowState == FormWindowState.Minimized)
+        if (WindowState == FormWindowState.Minimized && _isMinimised)
         {
-            _logger.LogInformation("Window is already minimised");
             return;
         }
 
         _logger.LogInformation("Minimising window");
+        _isMinimised = true;
         _canBeVisible = false;
+        WindowState = FormWindowState.Minimized;
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
-        WindowState = FormWindowState.Minimized;
-        ResetTimerIfEnabled(_minimiseTimer);
+        ResetTimer(_minimiseTimer);
         UpdateTrayContextMenu();
         SetVisibleCore(false);
     }
