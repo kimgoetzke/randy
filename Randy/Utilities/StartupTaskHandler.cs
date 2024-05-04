@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Principal;
+using Microsoft.Extensions.Logging;
 
 namespace Randy.Utilities;
 
@@ -11,6 +13,7 @@ public static class StartupTaskHandler
 
     public static bool Exists()
     {
+        IsUserAdministrator();
         using var taskService = new TaskService();
         var result = false;
         try
@@ -31,7 +34,6 @@ public static class StartupTaskHandler
         using var taskService = new TaskService();
         var taskDefinition = taskService.NewTask();
         taskDefinition.RegistrationInfo.Description = "Start Randy on startup";
-        taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
         taskDefinition.Actions.Add(new ExecAction(Application.ExecutablePath, ""));
         var trigger = new BootTrigger();
         trigger.Delay = TimeSpan.FromMinutes(1);
@@ -57,6 +59,29 @@ public static class StartupTaskHandler
         catch (Exception e)
         {
             logger.LogError("Failed to delete task: {Message}", e.Message);
+        }
+    }
+
+    [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Local")]
+    private static bool IsUserAdministrator()
+    {
+        try
+        {
+            var user = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(user);
+
+            var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            logger.LogInformation(
+                "User {Name} is admin: {IsAdmin}",
+                principal.Identity.Name,
+                isAdmin
+            );
+            return isAdmin;
+        }
+        catch (Exception e)
+        {
+            logger.LogInformation("Unauthorized access: {Message}", e.Message);
+            return false;
         }
     }
 }
