@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Randy.Controls;
-using Randy.Core;
 using CheckBox = System.Windows.Forms.CheckBox;
 using Label = System.Windows.Forms.Label;
 using Panel = System.Windows.Forms.Panel;
@@ -39,6 +38,8 @@ public class MainFormHandler(Form form, Config config)
         form.ClientSize = new Size(width, height);
         form.FormBorderStyle = Constants.DefaultFormStyle;
         form.MaximizeBox = false;
+        form.MinimizeBox = false;
+        form.ControlBox = true;
         form.Padding = new Padding(20);
         form.StartPosition = FormStartPosition.CenterScreen;
         _defaultWindowSize = form.Size;
