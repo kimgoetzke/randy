@@ -9,7 +9,8 @@ public struct WindowPlacement(
     int showCmd,
     Point ptMinPosition,
     Point ptMaxPosition,
-    Rectangle rcNormalPosition)
+    Rectangle rcNormalPosition
+)
 {
     public int Length = length;
     public int Flags = flags;

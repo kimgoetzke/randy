@@ -22,7 +22,12 @@ public class InvisibleForm : Form
     private static extern bool SetWindowPlacement(IntPtr hWnd, ref WindowPlacement lpwndpl);
 
     [DllImport("user32.dll")]
-    private static extern IntPtr SendMessage(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
+    private static extern IntPtr SendMessage(
+        IntPtr hWnd,
+        uint message,
+        IntPtr wParam,
+        IntPtr lParam
+    );
 
     [DllImport("user32.dll")]
     private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);

@@ -13,7 +13,11 @@ public static class ShortCutHandler
         var folder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
         var fullPath = Path.Combine(folder, FileName);
         var result = File.Exists(fullPath);
-        logger.LogInformation("Startup shortcut {Outcome} at: {Path}", result ? "exists" : "does NOT exist", fullPath);
+        logger.LogInformation(
+            "Startup shortcut {Outcome} at: {Path}",
+            result ? "exists" : "does NOT exist",
+            fullPath
+        );
         return result;
     }
 
@@ -26,7 +30,10 @@ public static class ShortCutHandler
         try
         {
             using var lnk = new ShellLink(
-                Application.ExecutablePath, "/p", startUpFolder, "Startup link for Randy"
+                Application.ExecutablePath,
+                "/p",
+                startUpFolder,
+                "Startup link for Randy"
             );
             lnk.RunAsAdministrator = true;
             lnk.Properties.ReadOnly = false;

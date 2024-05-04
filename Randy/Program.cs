@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Randy.Utilities;
 
@@ -13,7 +12,6 @@ internal static class Program
     private static void Main()
     {
         ApplicationConfiguration.Initialize();
-
         using var loggerFactory = LoggerFactory.Create(builder =>
         {
             builder
@@ -28,7 +26,6 @@ internal static class Program
         });
         LoggerProvider.loggerFactory = loggerFactory;
         var logger = loggerFactory.CreateLogger<MainForm>();
-        
         Application.Run(new MainForm(logger));
     }
 }
