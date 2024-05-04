@@ -4,7 +4,7 @@ namespace Randy.Utilities;
 
 public class UserSettings
 {
-    private static ILogger logger => LoggerProvider.CreateLogger(nameof(RegistryKeyHandler));
+    private static ILogger logger => LoggerProvider.CreateLogger(nameof(UserSettings));
     private int _padding = 30;
 
     public HotKey key { get; } = new();

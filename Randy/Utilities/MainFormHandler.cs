@@ -168,7 +168,6 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         return autoStartCheckBox;
     }
 
-    // TODO: Replace with value stored on disk
     private static bool IsAutoStartEnabled()
     {
         var enabledInRegistry = RegistryKeyHandler.IsEnabled();

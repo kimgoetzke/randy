@@ -17,7 +17,6 @@ public sealed partial class MainForm : Form
     private readonly Timer _trayIconTimer = new();
     private readonly MainFormHandler _formHandler;
     private readonly Colours _colours = new();
-    private bool _canBeVisible;
     private bool _isMinimised;
 
     public MainForm(ILogger<MainForm> logger)
@@ -30,7 +29,6 @@ public sealed partial class MainForm : Form
 
         // Create invisible form to manage hotkey & behaviour
         var invisibleForm = new InvisibleForm(logger, this, config);
-        invisibleForm.RegisterHotKey();
 
         // Initialise visible main form and minimise it after 1 second
         _formHandler = new MainFormHandler(this, config);
@@ -140,7 +138,6 @@ public sealed partial class MainForm : Form
         }
 
         _logger.LogInformation("Opening window");
-        _canBeVisible = true;
         _isMinimised = false;
         WindowState = FormWindowState.Normal;
         ShowInTaskbar = true;
@@ -161,7 +158,6 @@ public sealed partial class MainForm : Form
 
         _logger.LogInformation("Minimising window");
         _isMinimised = true;
-        _canBeVisible = false;
         WindowState = FormWindowState.Minimized;
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
