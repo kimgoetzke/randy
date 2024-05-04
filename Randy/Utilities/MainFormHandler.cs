@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Randy.Controls;
 using CheckBox = System.Windows.Forms.CheckBox;
 using Label = System.Windows.Forms.Label;
 using Panel = System.Windows.Forms.Panel;
@@ -47,7 +46,7 @@ public class MainFormHandler(Form form, UserSettings userSettings)
             RowCount = 4,
             ColumnCount = 1,
             AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowOnly,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
             Dock = DockStyle.Fill
         };
         tableLayoutPanel.Controls.Add(HotKeyPanel(), 0, 0);
@@ -72,10 +71,10 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         var plusLabel = new Label
         {
             Text = " + ",
-            Font = new Font(form.Font.FontFamily, 12, FontStyle.Regular),
+            Font = new Font(form.Font.FontFamily, 9, FontStyle.Regular),
             AutoSize = true,
             Dock = DockStyle.Left,
-            TextAlign = ContentAlignment.MiddleLeft,
+            TextAlign = ContentAlignment.TopCenter,
             ForeColor = _colours.NordBrightX
         };
         var hotKeyPanel = new Panel
@@ -118,10 +117,10 @@ public class MainFormHandler(Form form, UserSettings userSettings)
             Maximum = 10,
             Value = userSettings.padding / Multiplier,
             TickFrequency = 1,
+            LargeChange = 1,
             TickStyle = TickStyle.BottomRight,
             AutoSize = true,
-            Dock = DockStyle.Fill,
-            ForeColor = _colours.NordAccent9
+            Dock = DockStyle.Fill
         };
         slider.ValueChanged += (_, _) =>
         {
@@ -141,20 +140,18 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         return (sliderLabel, slider);
     }
 
-    private PanelWithBorder KeyPanel(string text)
+    private Label KeyPanel(string text)
     {
-        var label = new Label
+        return new Label
         {
             Text = text,
             AutoSize = true,
-            Font = new Font(form.Font.FontFamily, 8, FontStyle.Bold),
+            Font = new Font(form.Font.FontFamily, 9, FontStyle.Bold),
             Dock = DockStyle.Left,
-            TextAlign = ContentAlignment.TopCenter,
-            ForeColor = _colours.NordDark0
+            TextAlign = ContentAlignment.MiddleCenter,
+            ForeColor = _colours.NordDark0,
+            BackColor = _colours.NordBrightX
         };
-        var panel = new PanelWithBorder(_colours.NordDark9, _colours.NordDark3);
-        panel.Controls.Add(label);
-        return panel;
     }
 
     private CheckBox AutoStartCheckBox()

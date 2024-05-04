@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Randy.Core;
 using Randy.Utilities;
 using Timer = System.Windows.Forms.Timer;
+using ToolStripRenderer = Randy.Renderers.ToolStripRenderer;
 
 namespace Randy;
 
@@ -63,7 +64,9 @@ public sealed partial class MainForm : Form
         _trayIcon.ContextMenuStrip?.Dispose();
         var cm = new ContextMenuStrip();
         cm.BackColor = _colours.NordDark0;
-        cm.ForeColor = _colours.NordBrightX;
+        cm.ForeColor = _colours.NordBright4;
+        cm.ShowImageMargin = false;
+        cm.Renderer = new ToolStripRenderer();
         if (WindowState == FormWindowState.Minimized)
         {
             cm.Items.Add("Open", null, Open);
