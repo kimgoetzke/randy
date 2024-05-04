@@ -7,6 +7,8 @@ public class Config
     private static ILogger logger => LoggerProvider.CreateLogger(nameof(RegistryKeyHandler));
     private int _padding = 30;
 
+    public HotKey key { get; } = new();
+
     public int padding
     {
         get => _padding;
@@ -16,4 +18,9 @@ public class Config
             _padding = value;
         }
     }
+
+    public record HotKey(
+        uint modifierKey = 0x0008, // Windows key
+        uint otherKey = (uint)Keys.Oem5 // Backslash
+    );
 }

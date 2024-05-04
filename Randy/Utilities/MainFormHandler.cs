@@ -81,7 +81,7 @@ public class MainFormHandler(Form form, Config config)
             Dock = DockStyle.Left,
             ForeColor = _nordBrightX
         };
-        var modifierPanel = KeyPanel($"{GetKeyName(InvisibleForm.ModifierKey)}");
+        var modifierPanel = KeyPanel($"{GetKeyName(config.key.modifierKey)}");
         var plusLabel = new Label
         {
             Text = " + ",
@@ -99,7 +99,7 @@ public class MainFormHandler(Form form, Config config)
             Margin = new Padding(0, 10, 0, 10),
             MinimumSize = new Size(0, 30)
         };
-        var otherKeyLabel = KeyPanel($"{GetKeyName(InvisibleForm.OtherKey)}");
+        var otherKeyLabel = KeyPanel($"{GetKeyName(config.key.otherKey)}");
         hotKeyPanel.Controls.Add(otherKeyLabel);
         hotKeyPanel.Controls.Add(plusLabel);
         hotKeyPanel.Controls.Add(modifierPanel);

@@ -30,19 +30,15 @@ public class InvisibleForm : Form
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-    // General
     private const int SwMaximize = 3;
     private const uint WmPaint = 0x000F;
     private const int SwShowNormal = 1;
+    private const int HotkeyId = 1; // ID for the hotkey
+    private const uint WmHotkey = 0x0312; // Windows message for hotkey
+    private const int ExtraYPadding = 10;
     private readonly ILogger _logger;
     private readonly MainForm _mainForm;
     private readonly Config _config;
-
-    // Hot key
-    private const int HotkeyId = 1; // ID for the hotkey
-    private const uint WmHotkey = 0x0312; // Windows message for hotkey
-    public const uint ModifierKey = 0x0008; // Windows key
-    public const uint OtherKey = (uint)Keys.Oem5; // Backslash
 
     public InvisibleForm(ILogger logger, MainForm mainForm, Config config)
     {
@@ -58,7 +54,7 @@ public class InvisibleForm : Form
     public void RegisterHotKey()
     {
         _logger.LogInformation("Registering hotkey");
-        RegisterHotKey(Handle, HotkeyId, ModifierKey, OtherKey);
+        RegisterHotKey(Handle, HotkeyId, _config.key.modifierKey, _config.key.otherKey);
     }
 
     public void UnregisterHotKey(object? sender, FormClosingEventArgs e)
@@ -96,9 +92,9 @@ public class InvisibleForm : Form
 
         // Calculate new window size
         var newX = rect.Left + _config.padding;
-        var newY = rect.Top + _config.padding;
-        var newWidth = rect.Right - rect.Left - (_config.padding * 2);
-        var newHeight = rect.Bottom - rect.Top - (_config.padding * 2);
+        var newY = rect.Top + _config.padding + ExtraYPadding;
+        var newWidth = rect.Right - rect.Left - _config.padding * 2;
+        var newHeight = rect.Bottom - rect.Top - (_config.padding + ExtraYPadding) * 2;
 
         // Set the new window placement
         var wp = new WindowPlacement
