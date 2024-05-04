@@ -5,36 +5,10 @@ using Randy.Utilities;
 namespace Randy.Core;
 
 /**
- * This form contains the logic for the hotkey. It is permanently invisible.
+ * This form contains the logic for the hotkey. It is permanently invisible but always active.
  */
 public class InvisibleForm : Form
 {
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetForegroundWindow();
-
-    [DllImport("user32.dll")]
-    private static extern bool GetWindowRect(IntPtr hWnd, out Rect lpRect);
-
-    [DllImport("user32.dll")]
-    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-    [DllImport("user32.dll")]
-    private static extern bool SetWindowPlacement(IntPtr hWnd, ref WindowPlacement lpwndpl);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr SendMessage(
-        IntPtr hWnd,
-        uint message,
-        IntPtr wParam,
-        IntPtr lParam
-    );
-
-    [DllImport("user32.dll")]
-    private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
-
-    [DllImport("user32.dll")]
-    private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-
     private const int SwMaximize = 3;
     private const uint WmPaint = 0x000F;
     private const int SwShowNormal = 1;
@@ -50,22 +24,33 @@ public class InvisibleForm : Form
         _logger = logger;
         _mainForm = mainForm;
         _userSettings = userSettings;
+        InitialiseForm();
+        RegisterHotKey();
+    }
+
+    private void InitialiseForm()
+    {
         ShowInTaskbar = false;
         FormBorderStyle = FormBorderStyle.None;
         WindowState = FormWindowState.Minimized;
         Opacity = 0;
     }
 
-    public void RegisterHotKey()
+    private void RegisterHotKey()
     {
         _logger.LogInformation("Registering hotkey");
-        RegisterHotKey(Handle, HotkeyId, _userSettings.key.modifierKey, _userSettings.key.otherKey);
+        NativeApi.RegisterHotKey(
+            Handle,
+            HotkeyId,
+            _userSettings.key.modifierKey,
+            _userSettings.key.otherKey
+        );
     }
 
     public void UnregisterHotKey(object? sender, FormClosingEventArgs e)
     {
         _logger.LogInformation("Unregistering hotkey");
-        UnregisterHotKey(Handle, HotkeyId);
+        NativeApi.UnregisterHotKey(Handle, HotkeyId);
     }
 
     protected override void WndProc(ref Message m)
@@ -79,7 +64,7 @@ public class InvisibleForm : Form
 
         _logger.LogInformation("Hotkey pressed");
 
-        var window = GetForegroundWindow();
+        var window = NativeApi.GetForegroundWindow();
         if (window == _mainForm.Handle)
         {
             _logger.LogWarning("Using hotkey on main form is not allowed, ignoring request");
@@ -87,9 +72,9 @@ public class InvisibleForm : Form
         }
 
         _mainForm.ChangeTrayIconTemporarily();
-        ShowWindow(window, SwMaximize); // Maximize the window
+        NativeApi.ShowWindow(window, SwMaximize); // Maximize the window
 
-        if (!GetWindowRect(window, out var rect))
+        if (!NativeApi.GetWindowRect(window, out var rect))
         {
             _logger.LogWarning("Failed to get window rect");
             return;
@@ -113,7 +98,7 @@ public class InvisibleForm : Form
         };
 
         _logger.LogInformation("Updating window placement");
-        SetWindowPlacement(window, ref wp);
-        SendMessage(window, WmPaint, IntPtr.Zero, IntPtr.Zero); // Force a repaint of the window
+        NativeApi.SetWindowPlacement(window, ref wp);
+        NativeApi.SendMessage(window, WmPaint, IntPtr.Zero, IntPtr.Zero); // Force a repaint of the window
     }
 }
