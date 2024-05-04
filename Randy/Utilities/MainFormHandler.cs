@@ -172,7 +172,8 @@ public class MainFormHandler(Form form, UserSettings userSettings)
     {
         var enabledInRegistry = RegistryKeyHandler.IsEnabled();
         var shortcutExists = ShortCutHandler.Exists();
-        return enabledInRegistry || shortcutExists;
+        var taskExists = StartupTaskHandler.Exists();
+        return enabledInRegistry || shortcutExists || taskExists;
     }
 
     private static void SetAutoStart(bool enabled)
@@ -181,10 +182,12 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         if (enabled)
         {
             ShortCutHandler.Create();
+            StartupTaskHandler.Schedule();
         }
         else
         {
             ShortCutHandler.Delete();
+            StartupTaskHandler.Cancel();
         }
     }
 

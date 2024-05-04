@@ -10,13 +10,14 @@
         <DebugType>None</DebugType>
         <DebugSymbols>false</DebugSymbols>
         <RootNamespace>Randy</RootNamespace>
-        <Version>2</Version>
+        <Version>4</Version>
         <PublisherName>Kim Goetzke</PublisherName>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+        <PackageReference Include="TaskScheduler" Version="2.11.0" />
         <PackageReference Include="Vanara.Windows.Shell" Version="4.0.0" />
     </ItemGroup>
     <ItemGroup>
