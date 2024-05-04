@@ -7,17 +7,11 @@ using Panel = System.Windows.Forms.Panel;
 namespace Randy.Utilities;
 
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
-public class MainFormHandler(Form form, Config config)
+public class MainFormHandler(Form form, UserSettings userSettings)
 {
     private const int Multiplier = 10;
+    private readonly Colours _colours = new();
     private Size _defaultWindowSize;
-    private readonly Color _nordDark0 = ColorTranslator.FromHtml("#2e3440");
-    private readonly Color _nordDark3 = ColorTranslator.FromHtml("#4c566a");
-    private readonly Color _nordDark9 = ColorTranslator.FromHtml("#6d7a96");
-    private readonly Color _nordBright4 = ColorTranslator.FromHtml("#d8dee9");
-    private readonly Color _nordBright5 = ColorTranslator.FromHtml("#e5e9f0");
-    private readonly Color _nordBrightX = ColorTranslator.FromHtml("#909aaf");
-    private readonly Color _nordAccent9 = ColorTranslator.FromHtml("#81a1c1");
 
     public void InitialiseForm()
     {
@@ -30,7 +24,7 @@ public class MainFormHandler(Form form, Config config)
         form.ShowInTaskbar = true;
         form.Icon = new Icon(Constants.DefaultIconFile);
         form.Text = "Randy";
-        form.BackColor = _nordDark0;
+        form.BackColor = _colours.NordDark0;
         form.AutoScaleMode = AutoScaleMode.Font;
         var screen = Screen.PrimaryScreen?.WorkingArea;
         var width = screen != null ? screen.Value.Width * 25 / 100 : 600;
@@ -38,7 +32,7 @@ public class MainFormHandler(Form form, Config config)
         form.ClientSize = new Size(width, height);
         form.FormBorderStyle = Constants.DefaultFormStyle;
         form.MaximizeBox = false;
-        form.MinimizeBox = false;
+        form.MinimizeBox = true;
         form.ControlBox = true;
         form.Padding = new Padding(20);
         form.StartPosition = FormStartPosition.CenterScreen;
@@ -72,9 +66,9 @@ public class MainFormHandler(Form form, Config config)
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
             Dock = DockStyle.Left,
-            ForeColor = _nordBrightX
+            ForeColor = _colours.NordBrightX
         };
-        var modifierPanel = KeyPanel($"{GetKeyName(config.key.modifierKey)}");
+        var modifierPanel = KeyPanel($"{GetKeyName(userSettings.key.modifierKey)}");
         var plusLabel = new Label
         {
             Text = " + ",
@@ -82,7 +76,7 @@ public class MainFormHandler(Form form, Config config)
             AutoSize = true,
             Dock = DockStyle.Left,
             TextAlign = ContentAlignment.MiddleLeft,
-            ForeColor = _nordBrightX
+            ForeColor = _colours.NordBrightX
         };
         var hotKeyPanel = new Panel
         {
@@ -92,7 +86,7 @@ public class MainFormHandler(Form form, Config config)
             Margin = new Padding(0, 10, 0, 10),
             MinimumSize = new Size(0, 30)
         };
-        var otherKeyLabel = KeyPanel($"{GetKeyName(config.key.otherKey)}");
+        var otherKeyLabel = KeyPanel($"{GetKeyName(userSettings.key.otherKey)}");
         hotKeyPanel.Controls.Add(otherKeyLabel);
         hotKeyPanel.Controls.Add(plusLabel);
         hotKeyPanel.Controls.Add(modifierPanel);
@@ -108,30 +102,30 @@ public class MainFormHandler(Form form, Config config)
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
             Dock = DockStyle.Left,
-            ForeColor = _nordBrightX
+            ForeColor = _colours.NordBrightX
         };
         var valueLabel = new Label
         {
-            Text = config.padding + " px",
+            Text = userSettings.padding + " px",
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
             Dock = DockStyle.Left,
-            ForeColor = _nordBrightX
+            ForeColor = _colours.NordBrightX
         };
         var slider = new TrackBar
         {
             Minimum = 1,
             Maximum = 10,
-            Value = config.padding / Multiplier,
+            Value = userSettings.padding / Multiplier,
             TickFrequency = 1,
             TickStyle = TickStyle.BottomRight,
             AutoSize = true,
             Dock = DockStyle.Fill,
-            ForeColor = _nordAccent9
+            ForeColor = _colours.NordAccent9
         };
         slider.ValueChanged += (_, _) =>
         {
-            config.padding = slider.Value * Multiplier;
+            userSettings.padding = slider.Value * Multiplier;
             valueLabel.Text = slider.Value * Multiplier + " px";
         };
         var sliderLabel = new Panel
@@ -156,9 +150,9 @@ public class MainFormHandler(Form form, Config config)
             Font = new Font(form.Font.FontFamily, 8, FontStyle.Bold),
             Dock = DockStyle.Left,
             TextAlign = ContentAlignment.TopCenter,
-            ForeColor = _nordDark0
+            ForeColor = _colours.NordDark0
         };
-        var panel = new PanelWithBorder(_nordDark9, _nordDark3);
+        var panel = new PanelWithBorder(_colours.NordDark9, _colours.NordDark3);
         panel.Controls.Add(label);
         return panel;
     }
@@ -171,7 +165,7 @@ public class MainFormHandler(Form form, Config config)
             AutoSize = true,
             Dock = DockStyle.Bottom,
             Checked = IsAutoStartEnabled(),
-            ForeColor = _nordBrightX
+            ForeColor = _colours.NordBrightX
         };
         autoStartCheckBox.CheckedChanged += (_, _) => SetAutoStart(autoStartCheckBox.Checked);
         return autoStartCheckBox;

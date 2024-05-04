@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Randy.Utilities;
 
-public class Config
+public class UserSettings
 {
     private static ILogger logger => LoggerProvider.CreateLogger(nameof(RegistryKeyHandler));
     private int _padding = 30;

@@ -12,6 +12,7 @@ public sealed partial class MainForm : Form
     private readonly Timer _minimiseTimer = new();
     private readonly Timer _trayIconTimer = new();
     private readonly MainFormHandler _formHandler;
+    private readonly Colours _colours = new();
     private bool _canBeVisible;
 
     public MainForm(ILogger<MainForm> logger)
@@ -20,7 +21,7 @@ public sealed partial class MainForm : Form
         _logger = logger;
         _trayIconTimer.Tag = "Tray icon timer";
         _minimiseTimer.Tag = "Minimise timer";
-        var config = new Config();
+        var config = new UserSettings();
 
         // Create invisible form to manage hotkey & behaviour
         var invisibleForm = new InvisibleForm(logger, this, config);

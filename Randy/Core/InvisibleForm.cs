@@ -38,13 +38,13 @@ public class InvisibleForm : Form
     private const int ExtraYPadding = 10;
     private readonly ILogger _logger;
     private readonly MainForm _mainForm;
-    private readonly Config _config;
+    private readonly UserSettings _userSettings;
 
-    public InvisibleForm(ILogger logger, MainForm mainForm, Config config)
+    public InvisibleForm(ILogger logger, MainForm mainForm, UserSettings userSettings)
     {
         _logger = logger;
         _mainForm = mainForm;
-        _config = config;
+        _userSettings = userSettings;
         ShowInTaskbar = false;
         FormBorderStyle = FormBorderStyle.None;
         WindowState = FormWindowState.Minimized;
@@ -54,7 +54,7 @@ public class InvisibleForm : Form
     public void RegisterHotKey()
     {
         _logger.LogInformation("Registering hotkey");
-        RegisterHotKey(Handle, HotkeyId, _config.key.modifierKey, _config.key.otherKey);
+        RegisterHotKey(Handle, HotkeyId, _userSettings.key.modifierKey, _userSettings.key.otherKey);
     }
 
     public void UnregisterHotKey(object? sender, FormClosingEventArgs e)
@@ -91,10 +91,10 @@ public class InvisibleForm : Form
         }
 
         // Calculate new window size
-        var newX = rect.Left + _config.padding;
-        var newY = rect.Top + _config.padding + ExtraYPadding;
-        var newWidth = rect.Right - rect.Left - _config.padding * 2;
-        var newHeight = rect.Bottom - rect.Top - (_config.padding + ExtraYPadding) * 2;
+        var newX = rect.Left + _userSettings.padding;
+        var newY = rect.Top + _userSettings.padding + ExtraYPadding;
+        var newWidth = rect.Right - rect.Left - _userSettings.padding * 2;
+        var newHeight = rect.Bottom - rect.Top - (_userSettings.padding + ExtraYPadding) * 2;
 
         // Set the new window placement
         var wp = new WindowPlacement
