@@ -136,6 +136,7 @@ public sealed partial class MainForm : Form
         FormBorderStyle = Constants.DefaultFormStyle;
         Icon = new Icon(Constants.DefaultIconFile);
         Activate();
+        _formHandler.SetWindowSizeAndPosition();
         UpdateTrayContextMenu();
     }
 

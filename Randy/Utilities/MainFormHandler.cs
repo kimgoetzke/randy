@@ -40,21 +40,13 @@ public class MainFormHandler(Form form, Config config)
         form.FormBorderStyle = Constants.DefaultFormStyle;
         form.MaximizeBox = false;
         form.Padding = new Padding(20);
+        form.StartPosition = FormStartPosition.CenterScreen;
         _defaultWindowSize = form.Size;
     }
 
     private void InitialiseContent()
     {
         form.Controls.Clear();
-        var label = new Label
-        {
-            Text = "Randy is ready for action!",
-            Font = new Font(form.Font.FontFamily, 15, FontStyle.Bold),
-            AutoSize = true,
-            Dock = DockStyle.Top,
-            TextAlign = ContentAlignment.TopLeft,
-            ForeColor = _nordBright4
-        };
         var tableLayoutPanel = new TableLayoutPanel
         {
             RowCount = 4,
@@ -237,8 +229,15 @@ public class MainFormHandler(Form form, Config config)
         };
     }
 
-    public void SetWindowSize()
+    public void SetWindowSizeAndPosition()
     {
         form.Size = _defaultWindowSize;
+        if (Screen.PrimaryScreen is not { } screen)
+        {
+            return;
+        }
+
+        var area = screen.WorkingArea;
+        form.Location = new Point((area.Width - form.Width) / 2, (area.Height - form.Height) / 2);
     }
 }
