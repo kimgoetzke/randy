@@ -33,11 +33,18 @@ public static class StartupTaskHandler
     {
         using var taskService = new TaskService();
         var taskDefinition = taskService.NewTask();
+        taskDefinition.Settings.RestartCount = 3;
+        taskDefinition.Settings.RestartInterval = new TimeSpan(0, 1, 0);
+        taskDefinition.Settings.DisallowStartIfOnBatteries = false;
+        taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
+        taskDefinition.Principal.LogonType = TaskLogonType.InteractiveToken;
+        taskDefinition.RegistrationInfo.Author = "Kim Goetzke";
         taskDefinition.RegistrationInfo.Description = "Start Randy on startup";
         taskDefinition.Actions.Add(new ExecAction(Application.ExecutablePath, ""));
-        var trigger = new BootTrigger();
-        trigger.Delay = TimeSpan.FromMinutes(1);
-        taskDefinition.Triggers.Add(trigger);
+        var bootTrigger = new BootTrigger();
+        var logonTrigger = new LogonTrigger();
+        taskDefinition.Triggers.Add(logonTrigger);
+        taskDefinition.Triggers.Add(bootTrigger);
         try
         {
             taskService.RootFolder.RegisterTaskDefinition(TaskName, taskDefinition);
