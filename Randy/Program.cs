@@ -36,8 +36,6 @@ internal static class Program
         });
 
         LoggerProvider.loggerFactory = loggerFactory;
-        var logger = loggerFactory.CreateLogger<MainForm>();
-
-        Application.Run(new MainForm(logger));
+        Application.Run(new MainForm());
     }
 }

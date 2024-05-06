@@ -6,41 +6,45 @@ using Panel = System.Windows.Forms.Panel;
 namespace Randy.Utilities;
 
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
-public class MainFormHandler(Form form, UserSettings userSettings)
+public class MainFormHandler
 {
     private const int Multiplier = 10;
     private readonly Colours _colours = new();
     private Size _defaultWindowSize;
+    private readonly Form _form;
+    private readonly UserSettings _userSettings;
 
-    public void InitialiseForm()
+    public MainFormHandler(Form form, UserSettings userSettings)
     {
+        _form = form;
+        _userSettings = userSettings;
         InitialiseFormSettings();
         InitialiseContent();
     }
 
     private void InitialiseFormSettings()
     {
-        form.ShowInTaskbar = true;
-        form.Icon = new Icon(Constants.DefaultIconFile);
-        form.Text = "Randy";
-        form.BackColor = _colours.NordDark0;
-        form.AutoScaleMode = AutoScaleMode.Font;
+        _form.ShowInTaskbar = true;
+        _form.Icon = new Icon(Constants.DefaultIconFile);
+        _form.Text = "Randy";
+        _form.BackColor = _colours.NordDark0;
+        _form.AutoScaleMode = AutoScaleMode.Font;
         var screen = Screen.PrimaryScreen?.WorkingArea;
-        var width = screen != null ? screen.Value.Width * 25 / 100 : 600;
-        var height = screen != null ? screen.Value.Height * 20 / 100 : 250;
-        form.ClientSize = new Size(width, height);
-        form.FormBorderStyle = Constants.DefaultFormStyle;
-        form.MaximizeBox = false;
-        form.MinimizeBox = true;
-        form.ControlBox = true;
-        form.Padding = new Padding(20);
-        form.StartPosition = FormStartPosition.CenterScreen;
-        _defaultWindowSize = form.Size;
+        var width = screen != null ? screen.Value.Width * 25 / 100 : 600; // 1/4 of screen width or 600px
+        var height = screen != null ? screen.Value.Height * 20 / 100 : 250; // 1/5 of screen height or 250px
+        _form.ClientSize = new Size(width, height);
+        _form.FormBorderStyle = Constants.DefaultFormStyle;
+        _form.MaximizeBox = false;
+        _form.MinimizeBox = true;
+        _form.ControlBox = true;
+        _form.Padding = new Padding(20);
+        _form.StartPosition = FormStartPosition.CenterScreen;
+        _defaultWindowSize = _form.Size;
     }
 
     private void InitialiseContent()
     {
-        form.Controls.Clear();
+        _form.Controls.Clear();
         var tableLayoutPanel = new TableLayoutPanel
         {
             RowCount = 4,
@@ -54,7 +58,7 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         tableLayoutPanel.Controls.Add(sliderLabel, 0, 1);
         tableLayoutPanel.Controls.Add(slider, 0, 2);
         tableLayoutPanel.Controls.Add(AutoStartCheckBox(), 0, 3);
-        form.Controls.Add(tableLayoutPanel);
+        _form.Controls.Add(tableLayoutPanel);
     }
 
     private Panel HotKeyPanel()
@@ -67,11 +71,11 @@ public class MainFormHandler(Form form, UserSettings userSettings)
             Dock = DockStyle.Left,
             ForeColor = _colours.NordBrightX
         };
-        var modifierPanel = KeyPanel($"{GetKeyName(userSettings.key.modifierKey)}");
+        var modifierPanel = KeyPanel($"{GetKeyName(_userSettings.key.modifierKey)}");
         var plusLabel = new Label
         {
             Text = " + ",
-            Font = new Font(form.Font.FontFamily, 9, FontStyle.Regular),
+            Font = new Font(_form.Font.FontFamily, 9, FontStyle.Regular),
             AutoSize = true,
             Dock = DockStyle.Left,
             TextAlign = ContentAlignment.TopCenter,
@@ -85,7 +89,7 @@ public class MainFormHandler(Form form, UserSettings userSettings)
             Margin = new Padding(0, 10, 0, 10),
             MinimumSize = new Size(0, 30)
         };
-        var otherKeyLabel = KeyPanel($"{GetKeyName(userSettings.key.otherKey)}");
+        var otherKeyLabel = KeyPanel($"{GetKeyName(_userSettings.key.otherKey)}");
         hotKeyPanel.Controls.Add(otherKeyLabel);
         hotKeyPanel.Controls.Add(plusLabel);
         hotKeyPanel.Controls.Add(modifierPanel);
@@ -105,7 +109,7 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         };
         var valueLabel = new Label
         {
-            Text = userSettings.padding + " px",
+            Text = _userSettings.padding + " px",
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
             Dock = DockStyle.Left,
@@ -115,7 +119,7 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         {
             Minimum = 1,
             Maximum = 10,
-            Value = userSettings.padding / Multiplier,
+            Value = _userSettings.padding / Multiplier,
             TickFrequency = 1,
             LargeChange = 1,
             TickStyle = TickStyle.BottomRight,
@@ -124,7 +128,7 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         };
         slider.ValueChanged += (_, _) =>
         {
-            userSettings.padding = slider.Value * Multiplier;
+            _userSettings.padding = slider.Value * Multiplier;
             valueLabel.Text = slider.Value * Multiplier + " px";
         };
         var sliderLabel = new Panel
@@ -146,7 +150,7 @@ public class MainFormHandler(Form form, UserSettings userSettings)
         {
             Text = text,
             AutoSize = true,
-            Font = new Font(form.Font.FontFamily, 9, FontStyle.Bold),
+            Font = new Font(_form.Font.FontFamily, 9, FontStyle.Bold),
             Dock = DockStyle.Left,
             TextAlign = ContentAlignment.MiddleCenter,
             ForeColor = _colours.NordDark0,
@@ -225,13 +229,16 @@ public class MainFormHandler(Form form, UserSettings userSettings)
 
     public void SetWindowSizeAndPosition()
     {
-        form.Size = _defaultWindowSize;
+        _form.Size = _defaultWindowSize;
         if (Screen.PrimaryScreen is not { } screen)
         {
             return;
         }
 
         var area = screen.WorkingArea;
-        form.Location = new Point((area.Width - form.Width) / 2, (area.Height - form.Height) / 2);
+        _form.Location = new Point(
+            (area.Width - _form.Width) / 2,
+            (area.Height - _form.Height) / 2
+        );
     }
 }

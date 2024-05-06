@@ -15,13 +15,12 @@ public class InvisibleForm : Form
     private const int HotkeyId = 1; // ID for the hotkey
     private const uint WmHotkey = 0x0312; // Windows message for hotkey
     private const int ExtraYPadding = 10;
-    private readonly ILogger _logger;
+    private static ILogger logger => LoggerProvider.CreateLogger(nameof(InvisibleForm));
     private readonly MainForm _mainForm;
     private readonly UserSettings _userSettings;
 
-    public InvisibleForm(ILogger logger, MainForm mainForm, UserSettings userSettings)
+    public InvisibleForm(MainForm mainForm, UserSettings userSettings)
     {
-        _logger = logger;
         _mainForm = mainForm;
         _userSettings = userSettings;
         InitialiseForm();
@@ -38,7 +37,7 @@ public class InvisibleForm : Form
 
     private void RegisterHotKey()
     {
-        _logger.LogInformation("Registering hotkey");
+        logger.LogInformation("Registering hotkey");
         NativeApi.RegisterHotKey(
             Handle,
             HotkeyId,
@@ -49,7 +48,7 @@ public class InvisibleForm : Form
 
     public void UnregisterHotKey(object? sender, FormClosingEventArgs e)
     {
-        _logger.LogInformation("Unregistering hotkey");
+        logger.LogInformation("Unregistering hotkey");
         NativeApi.UnregisterHotKey(Handle, HotkeyId);
     }
 
@@ -62,12 +61,12 @@ public class InvisibleForm : Form
             return;
         }
 
-        _logger.LogInformation("Hotkey pressed");
+        logger.LogInformation("Hotkey pressed");
 
         var window = NativeApi.GetForegroundWindow();
         if (window == _mainForm.Handle)
         {
-            _logger.LogWarning("Using hotkey on main form is not allowed, ignoring request");
+            logger.LogWarning("Using hotkey on main form is not allowed, ignoring request");
             return;
         }
 
@@ -76,7 +75,7 @@ public class InvisibleForm : Form
 
         if (!NativeApi.GetWindowRect(window, out var rect))
         {
-            _logger.LogWarning("Failed to get window rect");
+            logger.LogWarning("Failed to get window rect");
             return;
         }
 
@@ -97,7 +96,7 @@ public class InvisibleForm : Form
             RcNormalPosition = new Rectangle(newX, newY, newX + newWidth, newY + newHeight)
         };
 
-        _logger.LogInformation("Updating window placement");
+        logger.LogInformation("Updating window placement");
         NativeApi.SetWindowPlacement(window, ref wp);
         NativeApi.SendMessage(window, WmPaint, IntPtr.Zero, IntPtr.Zero); // Force a repaint of the window
     }

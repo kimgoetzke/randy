@@ -11,32 +11,28 @@ namespace Randy;
  */
 public sealed partial class MainForm : Form
 {
-    private readonly ILogger<MainForm> _logger;
+    private static ILogger logger => LoggerProvider.CreateLogger(nameof(MainForm));
     private readonly NotifyIcon _trayIcon;
-    private readonly Timer _minimiseTimer = new();
-    private readonly Timer _trayIconTimer = new();
+    private readonly Timer _minimiseTimer = new() { Tag = "Minimise timer" };
+    private readonly Timer _trayIconTimer = new() { Tag = "Tray icon timer" };
     private readonly MainFormHandler _formHandler;
     private readonly Colours _colours = new();
     private bool _isMinimised;
 
-    public MainForm(ILogger<MainForm> logger)
+    public MainForm()
     {
         InitializeComponent();
-        _logger = logger;
-        _trayIconTimer.Tag = "Tray icon timer";
-        _minimiseTimer.Tag = "Minimise timer";
         var config = new UserSettings();
 
         // Create invisible form to manage hotkey & behaviour
-        var invisibleForm = new InvisibleForm(logger, this, config);
+        var invisibleForm = new InvisibleForm(this, config);
 
-        // Initialise visible main form and minimise it after 1 second
+        // Initialise visible main form
         _formHandler = new MainFormHandler(this, config);
-        _formHandler.InitialiseForm();
 
-        // Auto-minimise if not in development environment
+        // Auto-minimise main form if not in development environment
         var env = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production";
-        _logger.LogInformation("Environment: {E}", env);
+        logger.LogInformation("Environment: {E}", env);
         if (env != "Development")
         {
             Minimise();
@@ -76,9 +72,9 @@ public sealed partial class MainForm : Form
 
     public void ChangeTrayIconTemporarily()
     {
-        _logger.LogInformation("Changing icon temporarily");
+        logger.LogInformation("Changing icon temporarily");
         _trayIcon.Icon = new Icon(Constants.ActionIconFile);
-        _trayIconTimer.Interval = 1000;
+        _trayIconTimer.Interval = Constants.OneSecondInMs;
         _trayIconTimer.Tick += (_, _) =>
         {
             ResetTimer(_trayIconTimer);
@@ -89,27 +85,25 @@ public sealed partial class MainForm : Form
 
     private void Minimise()
     {
-        _minimiseTimer.Interval = Constants.MinimiseInterval;
+        _minimiseTimer.Interval = Constants.OneSecondInMs;
         _minimiseTimer.Tick += (_, _) =>
         {
             ResetTimer(_minimiseTimer);
             Minimise(null, EventArgs.Empty);
         };
         _minimiseTimer.Start();
-        _logger.LogInformation("Starting timer");
+        logger.LogInformation("Starting: {Name}", _minimiseTimer.Tag);
     }
 
-    private void ResetTimer(Timer timer)
+    private static void ResetTimer(Timer timer)
     {
         if (!timer.Enabled)
             return;
 
-        _logger.LogInformation("Stopping: {TimerName}", timer.Tag);
+        logger.LogInformation("Stopping: {Name}", timer.Tag);
         timer.Stop();
         timer.Dispose();
     }
-
-    #region Window state events
 
     private void ProcessResizeEvent(object? sender, EventArgs e)
     {
@@ -137,7 +131,7 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        _logger.LogInformation("Opening window");
+        logger.LogInformation("Opening window");
         _isMinimised = false;
         WindowState = FormWindowState.Normal;
         ShowInTaskbar = true;
@@ -156,17 +150,14 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        _logger.LogInformation("Minimising window");
+        logger.LogInformation("Minimising window");
         _isMinimised = true;
         WindowState = FormWindowState.Minimized;
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
-        ResetTimer(_minimiseTimer);
         UpdateTrayContextMenu();
         SetVisibleCore(false);
     }
 
     private void Exit(object? sender, EventArgs e) => Close();
-
-    #endregion
 }

@@ -41,6 +41,7 @@ public static class StartupTaskHandler
         try
         {
             taskService.RootFolder.RegisterTaskDefinition(TaskName, taskDefinition);
+            logger.LogInformation("Startup task registered successfully");
         }
         catch (Exception e)
         {
@@ -55,6 +56,7 @@ public static class StartupTaskHandler
         try
         {
             taskService.RootFolder.DeleteTask(TaskName);
+            logger.LogInformation("Startup task cancelled");
         }
         catch (Exception e)
         {
