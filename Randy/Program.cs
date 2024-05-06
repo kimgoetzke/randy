@@ -13,10 +13,14 @@ internal static class Program
     {
         ApplicationConfiguration.Initialize();
 
-        using var logFileWriter = new StreamWriter(
-            DateTime.Today.ToString("yyyy-MM-dd") + "-" + Constants.LogFile,
-            append: true
-        );
+        var fileName = Constants.LogFile;
+        var env = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production";
+        if (env == "Development")
+        {
+            fileName = DateTime.Today.ToString("yyyy-MM-dd") + "-" + Constants.LogFile;
+        }
+
+        using var logFileWriter = new StreamWriter(fileName, append: false);
         using var loggerFactory = LoggerFactory.Create(builder =>
         {
             builder
@@ -30,8 +34,10 @@ internal static class Program
                     options.SingleLine = true;
                 });
         });
+
         LoggerProvider.loggerFactory = loggerFactory;
         var logger = loggerFactory.CreateLogger<MainForm>();
+
         Application.Run(new MainForm(logger));
     }
 }

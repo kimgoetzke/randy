@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Randy.Utilities;
 
-public class TextFileLogger(string name, StreamWriter logFileWriter) : ILogger
+public class TextFileLogger(string name, TextWriter logFileWriter) : ILogger
 {
     public IDisposable? BeginScope<TState>(TState state)
     {
@@ -18,8 +18,8 @@ public class TextFileLogger(string name, StreamWriter logFileWriter) : ILogger
         LogLevel logLevel,
         EventId eventId,
         TState state,
-        Exception exception,
-        Func<TState, Exception, string> formatter
+        Exception? exception,
+        Func<TState, Exception?, string> formatter
     )
     {
         if (!IsEnabled(logLevel))
