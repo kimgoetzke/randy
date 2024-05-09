@@ -25,7 +25,7 @@ public class MainFormHandler
     private void InitialiseFormSettings()
     {
         _form.ShowInTaskbar = true;
-        _form.Icon = new Icon(Constants.DefaultIconFile);
+        _form.Icon = IconProvider.GetDefaultIconSafely();
         _form.Text = "Randy";
         _form.BackColor = _colours.NordDark0;
         _form.AutoScaleMode = AutoScaleMode.Font;

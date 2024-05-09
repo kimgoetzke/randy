@@ -39,7 +39,7 @@ public sealed partial class MainForm : Form
         }
 
         // Initialize tray icon & context menu
-        _trayIcon = new NotifyIcon { Icon = new Icon(Constants.DefaultIconFile), Visible = true };
+        _trayIcon = new NotifyIcon { Icon = IconProvider.GetDefaultIconSafely(), Visible = true };
         UpdateTrayContextMenu();
 
         // Register events
@@ -73,12 +73,12 @@ public sealed partial class MainForm : Form
     public void ChangeTrayIconTemporarily()
     {
         logger.LogInformation("Changing icon temporarily");
-        _trayIcon.Icon = new Icon(Constants.ActionIconFile);
+        _trayIcon.Icon = IconProvider.GetActionIconSafely();
         _trayIconTimer.Interval = Constants.OneSecondInMs;
         _trayIconTimer.Tick += (_, _) =>
         {
             ResetTimer(_trayIconTimer);
-            _trayIcon.Icon = new Icon(Constants.DefaultIconFile);
+            _trayIcon.Icon = IconProvider.GetDefaultIconSafely();
         };
         _trayIconTimer.Start();
     }
@@ -136,7 +136,7 @@ public sealed partial class MainForm : Form
         WindowState = FormWindowState.Normal;
         ShowInTaskbar = true;
         FormBorderStyle = Constants.DefaultFormStyle;
-        Icon = new Icon(Constants.DefaultIconFile);
+        Icon = IconProvider.GetDefaultIconSafely();
         UpdateTrayContextMenu();
         SetVisibleCore(true);
         Activate();
