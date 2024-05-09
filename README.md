@@ -22,6 +22,6 @@ way to get this done.
 3. You can then find `Randy.exe` in: `randy\Randy\bin\Release\net8.0-windows\win-x64\publish`
 4. Run `Randy.exe` and select `Start with Windows`
 
-### Demo
+## Demo
 
 ![Demo GIF](./assets/demo.gif)
