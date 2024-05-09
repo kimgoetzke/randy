@@ -5,7 +5,9 @@
 # Meet Randy
 
 A Windows application that only has one purpose: near-maximising (maximise minus padding) the active window using a
-hotkey. By default, the padding is 30 px but it can be configured in the settings.
+hotkey. By default, the padding is 30 px, but it can be configured in the settings.
+
+![Screenshot of window](./assets/screenshot_window.png)
 
 Hit `Win` + `\` to use the hotkey. This requires only one hand and is next to `Win` + `Z` which is a default
 Windows hotkey to creates window groups.
@@ -19,3 +21,7 @@ way to get this done.
 2. Run `dotnet publish -c Release -r win-x64 --self-contained`
 3. You can then find `Randy.exe` in: `randy\Randy\bin\Release\net8.0-windows\win-x64\publish`
 4. Run `Randy.exe` and select `Start with Windows`
+
+### Demo
+
+![Demo GIF](./assets/demo.gif)
