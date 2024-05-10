@@ -14,6 +14,9 @@ public static class NativeApi
     internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
     [DllImport("user32.dll")]
+    internal static extern bool GetWindowPlacement(IntPtr hWnd, ref WindowPlacement lpwndpl);
+
+    [DllImport("user32.dll")]
     internal static extern bool SetWindowPlacement(IntPtr hWnd, ref WindowPlacement lpwndpl);
 
     [DllImport("user32.dll")]

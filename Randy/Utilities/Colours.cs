@@ -3,6 +3,7 @@
 namespace Randy.Utilities;
 
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public class Colours
 {
     public readonly Color NordDark0 = ColorTranslator.FromHtml("#2e3440");

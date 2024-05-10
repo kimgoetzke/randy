@@ -5,7 +5,7 @@
 # Meet Randy
 
 A Windows application that only has one purpose: near-maximising (maximise minus padding) the active window using a
-hotkey. By default, the padding is 30 px, but it can be configured in the settings.
+hotkey. 😀 By default, the padding is 30 px, but it can be configured in the settings.
 
 ![Screenshot of window](./assets/screenshot_window.png)
 
@@ -20,8 +20,17 @@ way to get this done.
 1. Clone the repo and run `dotnet restore`
 2. Run `dotnet publish -c Release -r win-x64 --self-contained`
 3. You can then find `Randy.exe` in: `randy\Randy\bin\Release\net8.0-windows\win-x64\publish`
-4. Run `Randy.exe` and select `Start with Windows`
+4. Move the content of the `publish` folder to a location of your choice
+5. Run `Randy.exe` and select `Start with Windows`
 
 ## Demo
 
 ![Demo GIF](./assets/demo.gif)
+
+## Notes
+
+- The application auto-minimises to the system tray and is not visible when using `Alt` + `Tab`
+- The application can start with Windows by using attempting to 1) schedule a task with the Task Scheduler, 2) adding a
+  shortcut to the Startup folder, and 3) adding a registry entry to the Run key
+- Tray icon context menu changes based on the state of the application
+- Logs from the current/most recent session are saved to `console-log.txt` in the same directory as the executable
