@@ -153,12 +153,6 @@ public class InvisibleForm : Form
         var area = Screen.FromHandle(window).WorkingArea;
         NativeApi.ShowWindow(window, SwMaximize); // Maximize the window to get the animation
 
-        if (!NativeApi.GetWindowRect(window, out var rect))
-        {
-            logger.LogWarning("Failed to get window rect");
-            return;
-        }
-
         // Calculate new window size
         var newX = area.Top + _userSettings.padding;
         var newY = area.Top + _userSettings.padding + ExtraYPadding;
@@ -175,14 +169,6 @@ public class InvisibleForm : Form
             PtMinPosition = new Point(-1, -1),
             RcNormalPosition = new Rectangle(newX, newY, newX + newWidth, newY + newHeight)
         };
-
-        logger.LogInformation(
-            "Set to: {ActualX}, {ActualY}, {ActualWidth}, {ActualHeight} (based on rect)",
-            rect.Left,
-            rect.Top,
-            rect.Right,
-            rect.Bottom
-        );
 
         logger.LogInformation("Near-maximising #{Window}", window.ToString());
         NativeApi.SetWindowPlacement(window, ref placement);
