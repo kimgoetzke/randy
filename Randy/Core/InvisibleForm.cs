@@ -78,72 +78,35 @@ public class InvisibleForm : Form
 
         if (IsNearMaximized(placement, window))
         {
-            logger.LogInformation("#{Window} is near-maximised", window.ToString());
             if (previousPlacementKnown)
             {
                 RestorePreviousPlacement(window);
                 return;
             }
 
-            logger.LogInformation(
-                "No previous placement found for #{Window}, ignoring request",
-                window.ToString()
-            );
-        }
-        else
-        {
-            AddOrUpdatePreviousPlacement(previousPlacementKnown, window, placement);
+            logger.LogInformation("No previous placement found for #{Window}", window.ToString());
             NearMaximiseWindow(window);
+            return;
         }
+
+        AddOrUpdatePreviousPlacement(previousPlacementKnown, window, placement);
+        NearMaximiseWindow(window);
     }
 
     private bool IsNearMaximized(WindowPlacement placement, IntPtr window)
     {
-        // Get the size of the screen
-        var screen = Screen.FromHandle(window);
-        var screenWidth = screen.Bounds.Width;
-        var screenHeight = screen.Bounds.Height;
-
-        // TODO: Make this work (maybe a DPI issue?)
-
-        // Calculate the expected size and position of a near-maximized window
+        var area = Screen.FromHandle(window).WorkingArea;
         var expectedX = _userSettings.padding;
         var expectedY = _userSettings.padding + ExtraYPadding;
-        var expectedWidth = screenWidth - _userSettings.padding * 2;
-        var expectedHeight = screenHeight - _userSettings.padding * 2 - ExtraYPadding;
-
-        // Check if the current window placement matches the expected size and position
+        var expectedWidth = area.Width - _userSettings.padding;
+        var expectedHeight = area.Height - _userSettings.padding;
         var result =
             placement.RcNormalPosition.Left == expectedX
             && placement.RcNormalPosition.Top == expectedY
             && placement.RcNormalPosition.Width == expectedWidth
             && placement.RcNormalPosition.Height == expectedHeight;
 
-        logger.LogInformation(
-            "Expected: {ExpectedX}, {ExpectedY}, {ExpectedWidth}, {ExpectedHeight}",
-            expectedX,
-            expectedY,
-            expectedWidth,
-            expectedHeight
-        );
-
-        logger.LogInformation(
-            "Actual: {ActualX}, {ActualY}, {ActualWidth}, {ActualHeight} (based on placement)",
-            placement.RcNormalPosition.Left,
-            placement.RcNormalPosition.Top,
-            placement.RcNormalPosition.Width,
-            placement.RcNormalPosition.Height
-        );
-
-        NativeApi.GetWindowRect(window, out var rect);
-        logger.LogInformation(
-            "Actual: {ActualX}, {ActualY}, {ActualWidth}, {ActualHeight} (based on rect)",
-            rect.Left,
-            rect.Top,
-            rect.Right,
-            rect.Bottom
-        );
-
+        logger.LogDebug("Working area: {X}x{Y}", area.Width, area.Height);
         logger.LogInformation(
             "#{Window} {Result} near-maximised",
             window.ToString(),
@@ -187,7 +150,8 @@ public class InvisibleForm : Form
     private void NearMaximiseWindow(IntPtr window)
     {
         _mainForm.ChangeTrayIconTemporarily();
-        NativeApi.ShowWindow(window, SwMaximize); // Maximize the window
+        var area = Screen.FromHandle(window).WorkingArea;
+        NativeApi.ShowWindow(window, SwMaximize); // Maximize the window to get the animation
 
         if (!NativeApi.GetWindowRect(window, out var rect))
         {
@@ -196,10 +160,10 @@ public class InvisibleForm : Form
         }
 
         // Calculate new window size
-        var newX = rect.Left + _userSettings.padding;
-        var newY = rect.Top + _userSettings.padding + ExtraYPadding;
-        var newWidth = rect.Right - rect.Left - _userSettings.padding * 2;
-        var newHeight = rect.Bottom - rect.Top - _userSettings.padding * 2 - ExtraYPadding;
+        var newX = area.Top + _userSettings.padding;
+        var newY = area.Top + _userSettings.padding + ExtraYPadding;
+        var newWidth = area.Right - area.Left - _userSettings.padding * 2;
+        var newHeight = area.Bottom - area.Top - _userSettings.padding * 2 - ExtraYPadding;
 
         // Set the new window placement
         var placement = new WindowPlacement
@@ -211,6 +175,14 @@ public class InvisibleForm : Form
             PtMinPosition = new Point(-1, -1),
             RcNormalPosition = new Rectangle(newX, newY, newX + newWidth, newY + newHeight)
         };
+
+        logger.LogInformation(
+            "Set to: {ActualX}, {ActualY}, {ActualWidth}, {ActualHeight} (based on rect)",
+            rect.Left,
+            rect.Top,
+            rect.Right,
+            rect.Bottom
+        );
 
         logger.LogInformation("Near-maximising #{Window}", window.ToString());
         NativeApi.SetWindowPlacement(window, ref placement);
