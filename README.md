@@ -9,8 +9,8 @@ hotkey. 😀 By default, the padding is 30 px, but it can be configured in the s
 
 ![Screenshot of window](./assets/screenshot_window.png)
 
-Hit `Win` + `\` to use the hotkey. This requires only one hand and is next to `Win` + `Z` which is a default
-Windows hotkey to creates window groups.
+Hit `Win` + `\` to use the hotkey. On an ISO keyboard, this requires only one hand and is next to `Win` + `Z` which is a default
+Windows hotkey to create window groups.
 
 The application is written in C#, using .NET 8 and WinForms. The latter may be an awful framework but was the fastest
 way to get this done.
@@ -34,4 +34,4 @@ way to get this done.
   shortcut to the Startup folder, and 3) adding a registry entry to the Run key
 - Tray icon context menu changes based on the state of the application
 - Logs from the current/most recent session are saved to `console-log.txt` in the same directory as the executable
-- Pressing the hotkey again will restore the window to its previous state
+- Pressing the hotkey again will restore the window size to its previous state
