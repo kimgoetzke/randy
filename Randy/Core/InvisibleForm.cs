@@ -76,7 +76,7 @@ public class InvisibleForm : Form
         var placement = new WindowPlacement();
         NativeApi.GetWindowPlacement(window, ref placement);
 
-        if (IsNearMaximized(placement, window))
+        if (IsNearMaximised(placement, window))
         {
             if (previousPlacementKnown)
             {
@@ -93,7 +93,7 @@ public class InvisibleForm : Form
         NearMaximiseWindow(window);
     }
 
-    private bool IsNearMaximized(WindowPlacement placement, IntPtr window)
+    private bool IsNearMaximised(WindowPlacement placement, IntPtr window)
     {
         var area = Screen.FromHandle(window).WorkingArea;
         var expectedX = _userSettings.padding;
@@ -101,16 +101,34 @@ public class InvisibleForm : Form
         var expectedWidth = area.Width - _userSettings.padding;
         var expectedHeight = area.Height - _userSettings.padding;
         var result =
-            placement.RcNormalPosition.Left == expectedX
-            && placement.RcNormalPosition.Top == expectedY
-            && placement.RcNormalPosition.Width == expectedWidth
-            && placement.RcNormalPosition.Height == expectedHeight;
+            Math.Abs(placement.RcNormalPosition.Left - expectedX) <= Constants.ToleranceInPx
+            && Math.Abs(placement.RcNormalPosition.Top - expectedY) <= Constants.ToleranceInPx
+            && Math.Abs(placement.RcNormalPosition.Width - expectedWidth) <= Constants.ToleranceInPx
+            && Math.Abs(placement.RcNormalPosition.Height - expectedHeight)
+                <= Constants.ToleranceInPx;
 
+        logger.LogInformation(
+            "Expected size of #{Name}: ({X},{Y})x({W},{H})",
+            window.ToString(),
+            expectedX,
+            expectedY,
+            expectedWidth,
+            expectedHeight
+        );
+        logger.LogInformation(
+            "Actual size of #{Name}: ({X},{Y})x({W},{H})",
+            window.ToString(),
+            placement.RcNormalPosition.Left,
+            placement.RcNormalPosition.Top,
+            placement.RcNormalPosition.Width,
+            placement.RcNormalPosition.Height
+        );
         logger.LogDebug("Working area: {X}x{Y}", area.Width, area.Height);
         logger.LogInformation(
-            "#{Window} {Result} near-maximised",
+            "#{Window} {Result} near-maximised (tolerance: {Tolerance})",
             window.ToString(),
-            result ? "is currently" : "is currently NOT"
+            result ? "is currently" : "is currently NOT",
+            Constants.ToleranceInPx
         );
 
         return result;

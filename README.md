@@ -9,8 +9,8 @@ hotkey. 😀 By default, the padding is 30 px, but it can be configured in the s
 
 ![Screenshot of window](./assets/screenshot_window.png)
 
-Hit `Win` + `\` to use the hotkey. On an ISO keyboard, this requires only one hand and is next to `Win` + `Z` which is a default
-Windows hotkey to create window groups.
+Hit `Win` + `\` to use the hotkey. On an ISO keyboard, this requires only one hand and is next to `Win` + `Z` which is a
+default Windows hotkey to create window groups.
 
 The application is written in C#, using .NET 8 and WinForms. The latter may be an awful framework but was the fastest
 way to get this done.
@@ -21,7 +21,7 @@ way to get this done.
 2. Run `dotnet publish -c Release -r win-x64 --self-contained`
 3. You can then find `Randy.exe` in: `randy\Randy\bin\Release\net8.0-windows\win-x64\publish`
 4. Move the content of the `publish` folder to a location of your choice
-5. Run `Randy.exe` and select `Start with Windows`
+5. Run `Randy.exe` (as an administrator) and select `Start with Windows`
 
 ## Demo
 
