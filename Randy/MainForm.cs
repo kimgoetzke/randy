@@ -22,7 +22,7 @@ public sealed partial class MainForm : Form
     public MainForm()
     {
         InitializeComponent();
-        var config = new UserSettings();
+        var config = ConfigManager.Load();
 
         // Create invisible form to manage hotkey & behaviour
         var invisibleForm = new InvisibleForm(this, config);

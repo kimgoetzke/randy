@@ -12,12 +12,12 @@ public class MainFormHandler
     private readonly Colours _colours = new();
     private Size _defaultWindowSize;
     private readonly Form _form;
-    private readonly UserSettings _userSettings;
+    private readonly Config _config;
 
-    public MainFormHandler(Form form, UserSettings userSettings)
+    public MainFormHandler(Form form, Config config)
     {
         _form = form;
-        _userSettings = userSettings;
+        _config = config;
         InitialiseFormSettings();
         InitialiseContent();
     }
@@ -71,7 +71,7 @@ public class MainFormHandler
             Dock = DockStyle.Left,
             ForeColor = _colours.NordBrightX
         };
-        var modifierPanel = KeyPanel($"{GetKeyName(_userSettings.key.modifierKey)}");
+        var modifierPanel = KeyPanel($"{GetKeyName(_config.key.modifierKey)}");
         var plusLabel = new Label
         {
             Text = " + ",
@@ -89,7 +89,7 @@ public class MainFormHandler
             Margin = new Padding(0, 10, 0, 10),
             MinimumSize = new Size(0, 30)
         };
-        var otherKeyLabel = KeyPanel($"{GetKeyName(_userSettings.key.otherKey)}");
+        var otherKeyLabel = KeyPanel($"{GetKeyName(_config.key.otherKey)}");
         hotKeyPanel.Controls.Add(otherKeyLabel);
         hotKeyPanel.Controls.Add(plusLabel);
         hotKeyPanel.Controls.Add(modifierPanel);
@@ -109,7 +109,7 @@ public class MainFormHandler
         };
         var valueLabel = new Label
         {
-            Text = _userSettings.padding + " px",
+            Text = _config.padding + " px",
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
             Dock = DockStyle.Left,
@@ -119,7 +119,7 @@ public class MainFormHandler
         {
             Minimum = 1,
             Maximum = 10,
-            Value = _userSettings.padding / Multiplier,
+            Value = _config.padding / Multiplier,
             TickFrequency = 1,
             LargeChange = 1,
             TickStyle = TickStyle.BottomRight,
@@ -128,7 +128,7 @@ public class MainFormHandler
         };
         slider.ValueChanged += (_, _) =>
         {
-            _userSettings.padding = slider.Value * Multiplier;
+            _config.padding = slider.Value * Multiplier;
             valueLabel.Text = slider.Value * Multiplier + " px";
         };
         var sliderLabel = new Panel

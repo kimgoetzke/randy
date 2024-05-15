@@ -17,13 +17,13 @@ public class InvisibleForm : Form
     private const int ExtraYPadding = 10;
     private static ILogger logger => LoggerProvider.CreateLogger(nameof(InvisibleForm));
     private readonly MainForm _mainForm;
-    private readonly UserSettings _userSettings;
+    private readonly Config _config;
     private readonly Dictionary<string, WindowPlacement> _knownWindows = new();
 
-    public InvisibleForm(MainForm mainForm, UserSettings userSettings)
+    public InvisibleForm(MainForm mainForm, Config config)
     {
         _mainForm = mainForm;
-        _userSettings = userSettings;
+        _config = config;
         InitialiseForm();
         RegisterHotKey();
     }
@@ -39,12 +39,7 @@ public class InvisibleForm : Form
     private void RegisterHotKey()
     {
         logger.LogInformation("Registering hotkey");
-        NativeApi.RegisterHotKey(
-            Handle,
-            HotkeyId,
-            _userSettings.key.modifierKey,
-            _userSettings.key.otherKey
-        );
+        NativeApi.RegisterHotKey(Handle, HotkeyId, _config.key.modifierKey, _config.key.otherKey);
     }
 
     public void UnregisterHotKey(object? sender, FormClosingEventArgs e)
@@ -96,10 +91,10 @@ public class InvisibleForm : Form
     private bool IsNearMaximised(WindowPlacement placement, IntPtr window)
     {
         var area = Screen.FromHandle(window).WorkingArea;
-        var expectedX = _userSettings.padding;
-        var expectedY = _userSettings.padding + ExtraYPadding;
-        var expectedWidth = area.Width - _userSettings.padding;
-        var expectedHeight = area.Height - _userSettings.padding;
+        var expectedX = _config.padding;
+        var expectedY = _config.padding + ExtraYPadding;
+        var expectedWidth = area.Width - _config.padding;
+        var expectedHeight = area.Height - _config.padding;
         var result =
             Math.Abs(placement.RcNormalPosition.Left - expectedX) <= Constants.ToleranceInPx
             && Math.Abs(placement.RcNormalPosition.Top - expectedY) <= Constants.ToleranceInPx
@@ -153,7 +148,7 @@ public class InvisibleForm : Form
         {
             _knownWindows.Remove(window.ToString());
             logger.LogInformation(
-                "Removing previous placement for #{Window} so a new value can be added",
+                "Removing previous placement for #{Window} so that a new value can be added",
                 window.ToString()
             );
         }
@@ -172,10 +167,10 @@ public class InvisibleForm : Form
         NativeApi.ShowWindow(window, SwMaximize); // Maximize the window to get the animation
 
         // Calculate new window size
-        var newX = area.Top + _userSettings.padding;
-        var newY = area.Top + _userSettings.padding + ExtraYPadding;
-        var newWidth = area.Right - area.Left - _userSettings.padding * 2;
-        var newHeight = area.Bottom - area.Top - _userSettings.padding * 2 - ExtraYPadding;
+        var newX = area.Top + _config.padding;
+        var newY = area.Top + _config.padding + ExtraYPadding;
+        var newWidth = area.Right - area.Left - _config.padding * 2;
+        var newHeight = area.Bottom - area.Top - _config.padding * 2 - ExtraYPadding;
 
         // Set the new window placement
         var placement = new WindowPlacement

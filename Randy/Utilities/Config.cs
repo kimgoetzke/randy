@@ -2,9 +2,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Randy.Utilities;
 
-public class UserSettings
+public class Config
 {
-    private static ILogger logger => LoggerProvider.CreateLogger(nameof(UserSettings));
+    private static ILogger logger => LoggerProvider.CreateLogger(nameof(Config));
     private int _padding = 30;
 
     public HotKey key { get; } = new();
@@ -16,6 +16,7 @@ public class UserSettings
         {
             logger.LogInformation("Padding set to: {Padding}", value);
             _padding = value;
+            ConfigManager.Save(this);
         }
     }
 

@@ -3,6 +3,7 @@
 public static class Constants
 {
     public const string LogFile = "console_log.txt";
+    public const string ConfigFile = "config.json";
     public const FormBorderStyle DefaultFormStyle = FormBorderStyle.Fixed3D;
     public const int OneSecondInMs = 1000;
     public const int ToleranceInPx = 2;
