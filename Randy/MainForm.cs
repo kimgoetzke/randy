@@ -72,7 +72,7 @@ public sealed partial class MainForm : Form
 
     public void ChangeTrayIconTemporarily()
     {
-        logger.LogInformation("Changing icon temporarily");
+        logger.LogDebug("Changing icon temporarily");
         _trayIcon.Icon = IconProvider.GetActionIconSafely();
         _trayIconTimer.Interval = Constants.OneSecondInMs;
         _trayIconTimer.Tick += (_, _) =>
@@ -100,7 +100,7 @@ public sealed partial class MainForm : Form
         if (!timer.Enabled)
             return;
 
-        logger.LogInformation("Stopping: {Name}", timer.Tag);
+        logger.LogDebug("Stopping: {Name}", timer.Tag);
         timer.Stop();
         timer.Dispose();
     }

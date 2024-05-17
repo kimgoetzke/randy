@@ -91,10 +91,10 @@ public class InvisibleForm : Form
     private bool IsNearMaximised(WindowPlacement placement, IntPtr window)
     {
         var area = Screen.FromHandle(window).WorkingArea;
-        var expectedX = _config.padding;
-        var expectedY = _config.padding + ExtraYPadding;
-        var expectedWidth = area.Width - _config.padding;
-        var expectedHeight = area.Height - _config.padding;
+        var expectedX = area.Left + _config.padding;
+        var expectedY = area.Top + _config.padding + ExtraYPadding;
+        var expectedWidth = area.Right - _config.padding;
+        var expectedHeight = area.Bottom - _config.padding;
         var result =
             Math.Abs(placement.RcNormalPosition.Left - expectedX) <= Constants.ToleranceInPx
             && Math.Abs(placement.RcNormalPosition.Top - expectedY) <= Constants.ToleranceInPx
@@ -136,6 +136,7 @@ public class InvisibleForm : Form
         logger.LogInformation("Restoring previous placement for #{Window}", window.ToString());
         NativeApi.SetWindowPlacement(window, ref previousPlacement);
         NativeApi.SendMessage(window, WmPaint, IntPtr.Zero, IntPtr.Zero); // Force a repaint of the window
+        LogWindowSize(window);
     }
 
     private void AddOrUpdatePreviousPlacement(
@@ -167,7 +168,7 @@ public class InvisibleForm : Form
         NativeApi.ShowWindow(window, SwMaximize); // Maximize the window to get the animation
 
         // Calculate new window size
-        var newX = area.Top + _config.padding;
+        var newX = area.Left + _config.padding;
         var newY = area.Top + _config.padding + ExtraYPadding;
         var newWidth = area.Right - area.Left - _config.padding * 2;
         var newHeight = area.Bottom - area.Top - _config.padding * 2 - ExtraYPadding;
@@ -186,5 +187,19 @@ public class InvisibleForm : Form
         logger.LogInformation("Near-maximising #{Window}", window.ToString());
         NativeApi.SetWindowPlacement(window, ref placement);
         NativeApi.SendMessage(window, WmPaint, IntPtr.Zero, IntPtr.Zero); // Force a repaint of the window
+        LogWindowSize(window);
+    }
+
+    private static void LogWindowSize(IntPtr window)
+    {
+        NativeApi.GetWindowRect(window, out var rect);
+        logger.LogInformation(
+            "New size of #{Name}: ({X},{Y})x({W},{H}) ",
+            window.ToString(),
+            rect.Left,
+            rect.Top,
+            rect.Right,
+            rect.Bottom
+        );
     }
 }

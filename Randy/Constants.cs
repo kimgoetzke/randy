@@ -6,7 +6,7 @@ public static class Constants
     public const string ConfigFile = "config.json";
     public const FormBorderStyle DefaultFormStyle = FormBorderStyle.Fixed3D;
     public const int OneSecondInMs = 1000;
-    public const int ToleranceInPx = 2;
+    public const int ToleranceInPx = 4;
     internal const string DefaultIconFile = "assets/randy.ico";
     internal const string ActionIconFile = "assets/randy_go.ico";
 }
