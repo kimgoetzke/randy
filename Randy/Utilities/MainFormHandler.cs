@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using CheckBox = System.Windows.Forms.CheckBox;
 using Label = System.Windows.Forms.Label;
 using Panel = System.Windows.Forms.Panel;
@@ -24,9 +25,10 @@ public class MainFormHandler
 
     private void InitialiseFormSettings()
     {
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
         _form.ShowInTaskbar = true;
         _form.Icon = IconProvider.GetDefaultIconSafely();
-        _form.Text = "Randy";
+        _form.Text = "Randy v" + version;
         _form.BackColor = _colours.NordDark0;
         _form.AutoScaleMode = AutoScaleMode.Font;
         var screen = Screen.PrimaryScreen?.WorkingArea;
