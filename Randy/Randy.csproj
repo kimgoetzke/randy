@@ -10,7 +10,7 @@
         <DebugType>None</DebugType>
         <DebugSymbols>false</DebugSymbols>
         <RootNamespace>Randy</RootNamespace>
-        <Version>8</Version>
+        <Version>9</Version>
         <PublisherName>Kim Goetzke</PublisherName>
     </PropertyGroup>
 

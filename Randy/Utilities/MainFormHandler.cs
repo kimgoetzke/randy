@@ -25,10 +25,9 @@ public class MainFormHandler
 
     private void InitialiseFormSettings()
     {
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
         _form.ShowInTaskbar = true;
         _form.Icon = IconProvider.GetDefaultIconSafely();
-        _form.Text = "Randy v" + version;
+        _form.Text = "Randy" + VersionToString();
         _form.BackColor = _colours.NordDark0;
         _form.AutoScaleMode = AutoScaleMode.Font;
         var screen = Screen.PrimaryScreen?.WorkingArea;
@@ -61,6 +60,17 @@ public class MainFormHandler
         tableLayoutPanel.Controls.Add(slider, 0, 2);
         tableLayoutPanel.Controls.Add(AutoStartCheckBox(), 0, 3);
         _form.Controls.Add(tableLayoutPanel);
+    }
+
+    private static string VersionToString()
+    {
+        var version = "";
+        if (Assembly.GetExecutingAssembly().GetName().Version != null)
+        {
+            version = " v" + Assembly.GetExecutingAssembly().GetName().Version!.Major;
+        }
+
+        return version;
     }
 
     private Panel HotKeyPanel()
