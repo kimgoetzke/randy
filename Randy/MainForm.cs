@@ -39,7 +39,12 @@ public sealed partial class MainForm : Form
         }
 
         // Initialize tray icon & context menu
-        _trayIcon = new NotifyIcon { Icon = IconProvider.GetDefaultIconSafely(), Visible = true };
+        _trayIcon = new NotifyIcon
+        {
+            Icon = IconProvider.GetDefaultIconSafely(),
+            Visible = true,
+            Text = "Randy"
+        };
         UpdateTrayContextMenu();
 
         // Register events
