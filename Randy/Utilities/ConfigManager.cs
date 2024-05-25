@@ -13,11 +13,11 @@ public static class ConfigManager
     public static Config Load()
     {
         Config config;
-        if (File.Exists(Constants.ConfigFile))
+        if (File.Exists(Constants.Path.Config))
         {
             try
             {
-                var json = File.ReadAllText(Constants.ConfigFile);
+                var json = File.ReadAllText(Constants.Path.Config);
                 config = JsonSerializer.Deserialize<Config>(json, jsonOptions)!;
                 logger.LogInformation("Loaded {F} successfully", Constants.ConfigFile);
             }
@@ -36,6 +36,7 @@ public static class ConfigManager
             config = new Config();
             logger.LogInformation("Created new {F} because it did not exist", Constants.ConfigFile);
         }
+
         return config;
     }
 
@@ -44,7 +45,7 @@ public static class ConfigManager
         try
         {
             var json = JsonSerializer.Serialize(config);
-            File.WriteAllText(Constants.ConfigFile, json);
+            File.WriteAllText(Constants.Path.Config, json);
         }
         catch (Exception e)
         {

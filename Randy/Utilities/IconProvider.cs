@@ -10,9 +10,7 @@ public static class IconProvider
     {
         try
         {
-            return new Icon(
-                Application.ExecutablePath.Replace("Randy.exe", "") + Constants.DefaultIconFile
-            );
+            return new Icon(Constants.Path.DefaultIcon);
         }
         catch (Exception e)
         {
@@ -25,9 +23,7 @@ public static class IconProvider
     {
         try
         {
-            return new Icon(
-                Application.ExecutablePath.Replace("Randy.exe", "") + Constants.ActionIconFile
-            );
+            return new Icon(Constants.Path.ActionIcon);
         }
         catch (Exception e)
         {

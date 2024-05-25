@@ -13,14 +13,11 @@ internal static class Program
     {
         ApplicationConfiguration.Initialize();
 
-        var fileName = Constants.LogFile;
-        var env = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "Production";
-        if (env == "Development")
+        if (!Directory.Exists(Constants.Path.DataFolder))
         {
-            fileName = DateTime.Today.ToString("yyyy-MM-dd") + "-" + Constants.LogFile;
+            Directory.CreateDirectory(Constants.Path.DataFolder);
         }
-
-        using var logFileWriter = new StreamWriter(fileName, append: false);
+        using var logFileWriter = new StreamWriter(Constants.Path.Log, append: false);
         using var loggerFactory = LoggerFactory.Create(builder =>
         {
             builder
