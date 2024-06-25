@@ -24,10 +24,10 @@ public sealed partial class MainForm : Form
         InitializeComponent();
         var config = ConfigManager.Load();
 
-        // Create invisible form to manage hotkey & behaviour
+        // Create invisible form to manage hotkey & all behaviours
         var invisibleForm = new InvisibleForm(this, config);
 
-        // Initialise visible main form
+        // Initialise visible main form that allows configuring settings
         _formHandler = new MainFormHandler(this, config);
 
         // Auto-minimise main form if not in development environment
@@ -78,6 +78,7 @@ public sealed partial class MainForm : Form
     public void ChangeTrayIconTemporarily()
     {
         logger.LogDebug("Changing icon temporarily");
+        ResetTimer(_trayIconTimer);
         _trayIcon.Icon = IconProvider.GetActionIconSafely();
         _trayIconTimer.Interval = Constants.OneSecondInMs;
         _trayIconTimer.Tick += (_, _) =>
