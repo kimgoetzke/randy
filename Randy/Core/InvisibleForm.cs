@@ -9,11 +9,12 @@ namespace Randy.Core;
  */
 public class InvisibleForm : Form
 {
-    private const int SwMaximize = 3;
     private const uint WmPaint = 0x000F;
     private const int SwShowNormal = 1;
+    private const int SwMaximized = 3;
     private const int HotkeyId = 1; // ID for the hotkey
     private const uint WmHotkey = 0x0312; // Windows message for hotkey
+    private const int ToleranceInPx = 4; // Tolerance to be considered near-maximised
     private const int ExtraYPadding = 10;
     private static ILogger logger => LoggerProvider.CreateLogger(nameof(InvisibleForm));
     private readonly MainForm _mainForm;
@@ -96,11 +97,10 @@ public class InvisibleForm : Form
         var expectedWidth = area.Right - _config.padding;
         var expectedHeight = area.Bottom - _config.padding;
         var result =
-            Math.Abs(placement.RcNormalPosition.Left - expectedX) <= Constants.ToleranceInPx
-            && Math.Abs(placement.RcNormalPosition.Top - expectedY) <= Constants.ToleranceInPx
-            && Math.Abs(placement.RcNormalPosition.Width - expectedWidth) <= Constants.ToleranceInPx
-            && Math.Abs(placement.RcNormalPosition.Height - expectedHeight)
-                <= Constants.ToleranceInPx;
+            Math.Abs(placement.RcNormalPosition.Left - expectedX) <= ToleranceInPx
+            && Math.Abs(placement.RcNormalPosition.Top - expectedY) <= ToleranceInPx
+            && Math.Abs(placement.RcNormalPosition.Width - expectedWidth) <= ToleranceInPx
+            && Math.Abs(placement.RcNormalPosition.Height - expectedHeight) <= ToleranceInPx;
 
         logger.LogInformation(
             "Expected size of #{Name}: ({X},{Y})x({W},{H})",
@@ -123,7 +123,7 @@ public class InvisibleForm : Form
             "#{Window} {Result} near-maximised (tolerance: {Tolerance})",
             window.ToString(),
             result ? "is currently" : "is currently NOT",
-            Constants.ToleranceInPx
+            ToleranceInPx
         );
 
         return result;
@@ -165,7 +165,7 @@ public class InvisibleForm : Form
     {
         _mainForm.ChangeTrayIconTemporarily();
         var area = Screen.FromHandle(window).WorkingArea;
-        NativeApi.ShowWindow(window, SwMaximize); // Maximize the window to get the animation
+        NativeApi.ShowWindow(window, SwMaximized); // Maximize the window to get the animation
 
         // Calculate new window size
         var newX = area.Left + _config.padding;
